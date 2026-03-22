@@ -269,7 +269,10 @@
         <button class="word-save-btn" id="save-btn" onclick="toggleSave()">☆</button>
         <div class="word-kr" id="word-kr">안녕하세요</div>
         <div class="word-rom" id="word-rom">annyeonghaseyo</div>
-        <div class="word-sooni" id="word-sooni">ㄢ-ㄋㄧㄤ-ㄏㄚ-ㄙㄟ-ㄧㄡ</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+          <div class="word-sooni" id="word-sooni" style="cursor:pointer;" onclick="editSooni()" title="點擊編輯空耳">ㄢ-ㄋㄧㄤ-ㄏㄚ-ㄙㄟ-ㄧㄡ</div>
+          <button onclick="editSooni()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:6px;transition:color 0.2s;" title="編輯空耳">✏️</button>
+        </div>
         <div class="word-pos" id="word-pos">感嘆詞</div>
         <div class="word-zh" id="word-zh">你好／您好</div>
 
@@ -460,6 +463,24 @@
       </div>
       <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:8px;">
         <div style="font-size:14px;font-weight:600;margin-bottom:12px;">⚙ 學習設定</div>
+
+        <!-- 語速設定 -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">🔊 語音速度</div>
+          <div style="display:flex;gap:8px;">
+            <button id="spd-slow" class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="setSpeed(0.6,'slow')">🐢 慢速</button>
+            <button id="spd-normal" class="btn btn-accent" style="flex:1;justify-content:center;font-size:13px;" onclick="setSpeed(0.85,'normal')">🚶 正常</button>
+            <button id="spd-fast" class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="setSpeed(1.1,'fast')">🚀 快速</button>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+            <input type="range" id="spd-slider" min="0.4" max="1.5" step="0.05" value="0.85"
+              style="flex:1;accent-color:var(--accent);"
+              oninput="onSpeedSlider(this.value)">
+            <span id="spd-label" style="font-size:12px;color:var(--accent);font-weight:600;min-width:36px;text-align:right;">0.85x</span>
+          </div>
+          <button class="btn" style="margin-top:8px;font-size:12px;padding:7px 14px;" onclick="testSpeed()">▶ 試聽</button>
+        </div>
+
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <button class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="unlockLevel(1)">🔓 解鎖中級</button>
           <button class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="unlockLevel(2)">🔓 解鎖高級</button>
@@ -492,6 +513,25 @@
       <div class="modal-btns">
         <button class="btn" onclick="closeModal()">取消</button>
         <button class="btn btn-danger" onclick="doReset()">確認重置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sooni Edit Modal -->
+  <div class="modal-overlay" id="sooni-modal" onclick="closeSooniModal(event)">
+    <div class="modal-box" style="width:90%;max-width:360px;">
+      <div class="modal-title" style="margin-bottom:4px;">✏️ 編輯空耳</div>
+      <div style="font-size:22px;font-weight:700;color:var(--accent);text-align:center;margin:8px 0 4px;" id="sooni-word-display"></div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:14px;" id="sooni-word-zh"></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">原始空耳：<span id="sooni-original" style="color:var(--text3);"></span></div>
+      <input id="sooni-input"
+        style="width:100%;background:var(--bg3);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;color:var(--text);font-size:15px;font-family:'Noto Sans TC','Noto Sans KR',sans-serif;outline:none;margin-bottom:10px;"
+        placeholder="輸入你的空耳記法…"
+        onkeydown="if(event.key==='Enter')saveSooni()"/>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">💡 可輸入任何文字，例如：「安寧哈誰唷」「阿妮哈誰唷」</div>
+      <div class="modal-btns">
+        <button class="btn" onclick="resetSooni()">↩ 還原預設</button>
+        <button class="btn btn-accent" onclick="saveSooni()">✓ 儲存</button>
       </div>
     </div>
   </div>
@@ -2644,7 +2684,8 @@ const CONV_RESP = {
 let S = JSON.parse(localStorage.getItem('dk2State')||'null') || {
   level:0, unlockedLevels:[0], dayIndex:0, wordIndex:0,
   savedWords:[], xp:0, streak:1, studiedDays:[new Date().getDate()],
-  learnedWords:[], quizHistory:[], convScene:0, mode:'learn',
+  learnedWords:[], quizHistory:[], convScene:0, mode:'learn', ttsRate:0.85,
+  sooniOverrides:{},
 };
 function save(){localStorage.setItem('dk2State',JSON.stringify(S));}
 
@@ -2666,7 +2707,7 @@ function renderWord(){
   const w=curWord(); if(!w)return;
   document.getElementById('word-kr').textContent=w.kr;
   document.getElementById('word-rom').textContent=w.rom;
-  document.getElementById('word-sooni').textContent=w.sooni;
+  document.getElementById('word-sooni').textContent = getSooni(w);
   document.getElementById('word-pos').textContent=w.pos;
   document.getElementById('word-zh').textContent=w.zh;
   document.getElementById('ex-kr').textContent=w.ex_kr;
@@ -2677,7 +2718,7 @@ function renderWord(){
   // phoneme: highlight middle char
   const kr=w.kr, mid=Math.floor(kr.length/2);
   document.getElementById('phoneme-disp').innerHTML=kr.split('').map((c,i)=>i===mid?`<span>${c}</span>`:c).join('');
-  document.getElementById('score-hint').textContent=w.rom+' ('+w.sooni+')';
+  document.getElementById('score-hint').textContent=w.rom+' ('+getSooni(w)+')';
 
   // phrases with translation
   const pw=document.getElementById('phrases-wrap'); pw.innerHTML='';
@@ -2786,7 +2827,7 @@ function showAllReview(){
         <span>・</span><span>${w.zh}</span>
         <span style="font-size:11px;padding:2px 8px;background:var(--bg4);border-radius:20px;margin-left:auto;">${['初級','中級','高級'][w.level]}</span>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${w.sooni}</div>`;
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${(S.sooniOverrides&&S.sooniOverrides[w.kr]!==undefined)?"✏ "+S.sooniOverrides[w.kr]:w.sooni}</div>`;
     d.onclick=()=>{playTTS(w.kr);toast(`🔊 ${w.kr} = ${w.zh}`);};
     container.appendChild(d);
   });
@@ -2806,13 +2847,108 @@ function setMode(m){
 // =====================================================================
 // TTS / AUDIO
 // =====================================================================
+// =====================================================================
+// 空耳編輯
+// =====================================================================
+function getSooni(w){
+  if(!S.sooniOverrides) S.sooniOverrides = {};
+  return S.sooniOverrides[w.kr] !== undefined ? S.sooniOverrides[w.kr] : w.sooni;
+}
+
+function editSooni(){
+  const w = curWord(); if(!w) return;
+  if(!S.sooniOverrides) S.sooniOverrides = {};
+  document.getElementById('sooni-word-display').textContent = w.kr;
+  document.getElementById('sooni-word-zh').textContent = w.zh;
+  document.getElementById('sooni-original').textContent = w.sooni;
+  document.getElementById('sooni-input').value = S.sooniOverrides[w.kr] !== undefined ? S.sooniOverrides[w.kr] : w.sooni;
+  document.getElementById('sooni-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('sooni-input').focus(), 100);
+}
+
+function closeSooniModal(e){
+  if(e && e.target !== document.getElementById('sooni-modal')) return;
+  document.getElementById('sooni-modal').classList.remove('show');
+}
+
+function saveSooni(){
+  const w = curWord(); if(!w) return;
+  if(!S.sooniOverrides) S.sooniOverrides = {};
+  const val = document.getElementById('sooni-input').value.trim();
+  if(val === w.sooni){
+    // Same as original — remove override
+    delete S.sooniOverrides[w.kr];
+  } else {
+    S.sooniOverrides[w.kr] = val;
+  }
+  save();
+  document.getElementById('word-sooni').textContent = getSooni(w);
+  document.getElementById('sooni-modal').classList.remove('show');
+  toast('✅ 空耳已更新！');
+}
+
+function resetSooni(){
+  const w = curWord(); if(!w) return;
+  if(!S.sooniOverrides) S.sooniOverrides = {};
+  delete S.sooniOverrides[w.kr];
+  save();
+  document.getElementById('sooni-input').value = w.sooni;
+  document.getElementById('word-sooni').textContent = w.sooni;
+  document.getElementById('sooni-modal').classList.remove('show');
+  toast('↩ 已還原預設空耳');
+}
+
 function playTTS(text){
   if('speechSynthesis' in window){
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    u.lang='ko-KR'; u.rate=0.85;
+    u.lang='ko-KR'; u.rate=S.ttsRate||0.85;
     window.speechSynthesis.speak(u);
   }
+}
+
+// ── 語速設定 ──
+function setSpeed(rate, key){
+  S.ttsRate = rate;
+  save();
+  document.getElementById('spd-slider').value = rate;
+  document.getElementById('spd-label').textContent = rate.toFixed(2)+'x';
+  ['slow','normal','fast'].forEach(k=>{
+    const btn = document.getElementById('spd-'+k);
+    btn.className = 'btn' + (k===key?' btn-accent':'');
+  });
+  toast('語速已設為 '+rate.toFixed(2)+'x');
+}
+
+function onSpeedSlider(val){
+  const rate = parseFloat(val);
+  S.ttsRate = rate;
+  save();
+  document.getElementById('spd-label').textContent = rate.toFixed(2)+'x';
+  // Update active button state
+  ['slow','normal','fast'].forEach(k=>{
+    document.getElementById('spd-'+k).className = 'btn';
+  });
+  if(rate<=0.65) document.getElementById('spd-slow').className='btn btn-accent';
+  else if(rate>=1.0) document.getElementById('spd-fast').className='btn btn-accent';
+  else document.getElementById('spd-normal').className='btn btn-accent';
+}
+
+function testSpeed(){
+  playTTS('안녕하세요! 한국어 공부 화이팅!');
+  toast('▶ 試聽中…');
+}
+
+function initSpeedUI(){
+  const rate = S.ttsRate || 0.85;
+  document.getElementById('spd-slider').value = rate;
+  document.getElementById('spd-label').textContent = rate.toFixed(2)+'x';
+  let activeKey = 'normal';
+  if(rate<=0.65) activeKey='slow';
+  else if(rate>=1.0) activeKey='fast';
+  ['slow','normal','fast'].forEach(k=>{
+    document.getElementById('spd-'+k).className = 'btn'+(k===activeKey?' btn-accent':'');
+  });
 }
 function playAudio(){playTTS(curWord().kr);toast('🔊 播放單字發音');}
 function playExampleAudio(){playTTS(curWord().ex_kr);toast('🔊 播放例句');}
@@ -3234,7 +3370,7 @@ function searchWords(q){
         <span>・</span><span>${w.zh}</span>
         <span style="font-size:11px;padding:2px 8px;background:var(--bg4);border-radius:20px;margin-left:auto;">${['初級','中級','高級'][w.level]}</span>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${w.sooni}</div>`;
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${(S.sooniOverrides&&S.sooniOverrides[w.kr]!==undefined)?"✏ "+S.sooniOverrides[w.kr]:w.sooni}</div>`;
     d.onclick=()=>{playTTS(w.kr);toast(`🔊 ${w.kr} = ${w.zh}`);};
     container.appendChild(d);
   });
@@ -3363,6 +3499,7 @@ function init(){
   renderWordCount();
   document.getElementById('xp-count').textContent=S.xp;
   document.getElementById('streak-count').textContent=S.streak;
+  initSpeedUI();
 }
 init();
 </script>
