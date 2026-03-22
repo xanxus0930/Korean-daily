@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Korean 每日韓語</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+  :root {
+    --bg:#0d0d0d;--bg2:#1a1a1a;--bg3:#242424;--bg4:#2e2e2e;
+    --accent:#ff6b35;--accent2:#ff9a6c;--green:#4ade80;--blue:#60a5fa;
+    --yellow:#fbbf24;--red:#f87171;--purple:#a78bfa;
+    --text:#f0f0f0;--text2:#a0a0a0;--text3:#606060;--border:#333;
+    --card-radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans TC','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+  #app{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;position:relative;}
+
+  /* Header */
+  .header{padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);}
+  .logo{font-size:20px;font-weight:700;}.logo span{color:var(--accent);}
+  .header-right{display:flex;gap:8px;align-items:center;}
+  .badge{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;display:flex;align-items:center;gap:4px;}
+
+  /* Level tabs */
+  .level-tabs{display:flex;padding:12px 16px;gap:8px;}
+  .level-tab{flex:1;padding:9px 4px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:13px;font-weight:500;text-align:center;cursor:pointer;transition:all 0.2s;}
+  .level-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
+  .level-tab.locked{opacity:0.4;cursor:not-allowed;}
+  .level-tab .sub{font-size:10px;display:block;opacity:0.7;margin-top:1px;}
+
+  /* Progress */
+  .prog-wrap{padding:0 16px 10px;font-size:12px;color:var(--text2);}
+  .prog-bar{height:4px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden;}
+  .prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s;}
+
+  /* Nav */
+  .nav{display:flex;background:var(--bg2);border-top:1px solid var(--border);position:fixed;bottom:0;width:100%;max-width:480px;z-index:100;}
+  .nav-btn{flex:1;padding:10px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;transition:color 0.2s;}
+  .nav-btn.active{color:var(--accent);}
+  .nav-icon{font-size:18px;}
+
+  /* Main */
+  .main{flex:1;overflow-y:auto;padding:0 0 68px;}
+  .screen{display:none;}.screen.active{display:block;}
+
+  /* Cards */
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-radius);margin:0 16px 12px;padding:16px;}
+  .card-title{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;}
+
+  /* Word card */
+  .word-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-radius);margin:0 16px 10px;padding:28px 20px;text-align:center;position:relative;}
+  .word-counter{position:absolute;top:14px;left:16px;font-size:12px;color:var(--text3);}
+  .word-save-btn{position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);transition:color 0.2s;}
+  .word-save-btn.saved{color:var(--yellow);}
+  .mode-tags{display:flex;gap:5px;position:absolute;top:14px;right:44px;}
+  .mode-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg4);color:var(--text2);cursor:pointer;border:1px solid transparent;transition:all 0.2s;}
+  .mode-tag.active{background:rgba(255,107,53,0.2);color:var(--accent);border-color:rgba(255,107,53,0.3);}
+  .word-kr{font-family:'Noto Sans KR',sans-serif;font-size:46px;font-weight:700;letter-spacing:2px;margin-bottom:6px;}
+  .word-rom{font-size:15px;color:var(--accent2);margin-bottom:3px;}
+  .word-sooni{font-size:12px;color:var(--text2);background:var(--bg4);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:7px;}
+  .word-pos{font-size:12px;color:var(--blue);background:rgba(96,165,250,0.1);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:14px;}
+  .word-zh{font-size:26px;font-weight:700;margin-bottom:14px;}
+
+  /* Example with audio */
+  .example-block{background:var(--bg3);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:12px 14px;text-align:left;margin-bottom:4px;}
+  .example-kr{font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--text);margin-bottom:3px;}
+  .example-zh{font-size:12px;color:var(--text2);margin-bottom:8px;}
+  .example-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .ex-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg4);color:var(--text2);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.2s;}
+  .ex-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .ex-btn.recording{border-color:var(--red);color:var(--red);}
+
+  /* Word action buttons */
+  .word-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .nav-word-btns{display:flex;gap:10px;padding:6px 16px 14px;}
+  .nav-word-btns .btn{flex:1;justify-content:center;}
+
+  /* Btn */
+  .btn{padding:9px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+  .btn:hover{background:var(--bg4);}
+  .btn-accent{background:var(--accent);border-color:var(--accent);color:white;}
+  .btn-accent:hover{background:var(--accent2);}
+  .btn-green{background:rgba(74,222,128,0.12);border-color:var(--green);color:var(--green);}
+  .btn-red{background:rgba(248,113,113,0.12);border-color:var(--red);color:var(--red);}
+  .btn-yellow{background:rgba(251,191,36,0.12);border-color:var(--yellow);color:var(--yellow);}
+
+  /* Phrases */
+  .phrase-row{display:flex;align-items:center;background:var(--bg3);border-radius:10px;padding:9px 12px;margin-bottom:7px;gap:8px;}
+  .phrase-kr{font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:600;flex:1;}
+  .phrase-zh{font-size:12px;color:var(--text2);flex:1;}
+  .phrase-play{background:none;border:none;font-size:16px;cursor:pointer;color:var(--accent2);padding:2px 6px;}
+
+  /* Memory */
+  .memory-tip{background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.18);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--text2);margin:0 16px 12px;}
+  .memory-tip strong{color:var(--accent);}
+
+  /* Speak section */
+  .speak-box{background:var(--bg3);border-radius:12px;padding:14px;margin:0 16px 12px;}
+  .speak-title{font-size:11px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+  .phoneme{font-size:18px;text-align:center;margin-bottom:10px;font-family:'Noto Sans KR',sans-serif;letter-spacing:4px;}
+  .phoneme span{color:var(--accent2);}
+  .speak-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .speak-result{background:var(--bg4);border-radius:10px;padding:14px;text-align:center;margin-top:12px;}
+  .score-num{font-size:36px;font-weight:700;}
+  .score-good{color:var(--green);}
+  .score-ok{color:var(--yellow);}
+  .score-bad{color:var(--red);}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+  .rec-dot{display:inline-block;width:10px;height:10px;background:var(--red);border-radius:50%;animation:pulse 1s infinite;margin-right:5px;}
+
+  /* Review section */
+  .review-card{background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(96,165,250,0.08));border:1px solid rgba(167,139,250,0.25);border-radius:var(--card-radius);margin:0 16px 12px;padding:16px;}
+  .review-title{font-size:11px;color:var(--purple);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+  .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .review-chip{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.2s;}
+  .review-chip:hover{border-color:var(--purple);background:rgba(167,139,250,0.08);}
+  .review-chip-kr{font-family:'Noto Sans KR',sans-serif;font-size:18px;font-weight:600;}
+  .review-chip-zh{font-size:12px;color:var(--text3);margin-top:2px;}
+  .review-chip-rom{font-size:11px;color:var(--accent2);margin-top:1px;}
+  .review-empty{font-size:13px;color:var(--text3);text-align:center;padding:16px 0;}
+
+  /* Quiz */
+  .quiz-header{padding:12px 16px 4px;display:flex;align-items:center;gap:12px;}
+  .quiz-badge{background:var(--yellow);color:#000;border-radius:10px;padding:6px 12px;font-size:13px;font-weight:700;text-align:center;min-width:48px;}
+  .quiz-badge .ql{font-size:10px;opacity:0.7;}
+  .quiz-score-row{display:flex;justify-content:space-between;padding:4px 20px;font-size:13px;color:var(--text2);}
+  .quiz-q{font-size:19px;font-weight:600;margin:14px 16px 14px;text-align:center;font-family:'Noto Sans KR',sans-serif;line-height:1.4;}
+  .quiz-opts{padding:0 16px;display:flex;flex-direction:column;gap:10px;}
+  .quiz-opt{padding:15px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;font-size:15px;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .quiz-opt:hover:not(.correct):not(.wrong){border-color:var(--accent);}
+  .quiz-opt.correct{background:rgba(74,222,128,0.13);border-color:var(--green);color:var(--green);}
+  .quiz-opt.wrong{background:rgba(248,113,113,0.1);border-color:var(--red);color:var(--red);}
+  .quiz-feedback{margin:12px 16px 0;padding:12px 14px;background:var(--bg3);border-radius:10px;font-size:13px;display:none;}
+  .quiz-feedback.wrong-fb{border-left:3px solid var(--red);}
+  .quiz-feedback.correct-fb{border-left:3px solid var(--green);}
+  .quiz-save-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+  .quiz-next-wrap{padding:12px 16px;display:none;}
+
+  /* Conversation */
+  .conv-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px;}
+  .conv-chip{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;}
+  .conv-chip:hover{border-color:var(--accent);}
+  .chat-box{min-height:200px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin:0 16px 10px;padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:280px;}
+  .chat-msg{max-width:85%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.5;}
+  .chat-msg.ai{background:var(--bg4);border-radius:4px 14px 14px 14px;align-self:flex-start;}
+  .chat-msg.user{background:var(--accent);color:white;border-radius:14px 4px 14px 14px;align-self:flex-end;}
+  .msg-kr{font-family:'Noto Sans KR',sans-serif;font-size:14px;}
+  .msg-zh{font-size:11px;opacity:0.65;margin-top:3px;}
+  .chat-input-row{display:flex;gap:8px;padding:0 16px 10px;align-items:center;}
+  .chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:24px;padding:10px 16px;color:var(--text);font-size:13px;font-family:'Noto Sans KR','Noto Sans TC',sans-serif;outline:none;}
+  .chat-input::placeholder{color:var(--text3);}
+  .send-btn{width:42px;height:42px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:white;}
+  .chat-toolbar{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap;}
+  .chat-toolbar .btn{font-size:11px;padding:6px 12px;}
+
+  /* Search */
+  .search-bar{padding:8px 16px 10px;}
+  .search-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'Noto Sans KR','Noto Sans TC',sans-serif;outline:none;}
+  .search-input::placeholder{color:var(--text3);}
+  .sr-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin:0 16px 8px;cursor:pointer;transition:border-color 0.2s;}
+  .sr-item:hover{border-color:var(--accent);}
+  .sr-kr{font-family:'Noto Sans KR',sans-serif;font-size:22px;font-weight:700;}
+  .sr-row{display:flex;gap:8px;align-items:center;margin-top:4px;font-size:13px;color:var(--text2);}
+
+  /* Stats */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px;}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;}
+  .stat-num{font-size:30px;font-weight:700;}
+  .stat-label{font-size:12px;color:var(--text2);margin-top:4px;}
+
+  /* Calendar */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12px;color:var(--text3);background:var(--bg3);}
+  .cal-day.today{background:var(--accent);color:white;font-weight:700;}
+  .cal-day.done{background:rgba(74,222,128,0.18);color:var(--green);}
+
+  /* Vocab book */
+  .saved-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color 0.2s;}
+  .saved-item:hover{border-color:var(--accent);}
+  .si-kr{font-family:'Noto Sans KR',sans-serif;font-size:20px;font-weight:600;}
+  .si-info{font-size:12px;color:var(--text2);margin-top:2px;}
+
+  /* Section label */
+  .sec-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:8px 16px 4px;}
+
+  /* Today header */
+  .today-hdr{display:flex;align-items:center;gap:12px;padding:10px 16px;}
+  .today-badge{background:var(--accent);color:white;border-radius:10px;padding:5px 12px;font-size:13px;font-weight:700;text-align:center;min-width:46px;}
+  .today-badge .dl{font-size:10px;opacity:0.8;}
+
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:90%;max-width:340px;text-align:center;}
+  .modal-title{font-size:18px;font-weight:700;margin-bottom:8px;}
+  .modal-desc{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6;}
+  .modal-btns{display:flex;gap:10px;}
+  .modal-btns .btn{flex:1;justify-content:center;}
+  .btn-danger{background:rgba(248,113,113,0.15);border-color:var(--red);color:var(--red);}
+
+  /* Toast */
+  #toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border);border-radius:20px;padding:9px 18px;font-size:13px;z-index:1000;opacity:0;transition:opacity 0.3s;white-space:nowrap;pointer-events:none;}
+  #toast.show{opacity:1;}
+
+  .hint-text{font-size:12px;color:var(--text3);text-align:center;padding:4px 16px;}
+  .green-t{color:var(--green);}
+  .accent-t{color:var(--accent);}
+
+  /* Word count banner */
+  .word-count-banner{background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.2);border-radius:12px;padding:10px 16px;margin:0 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+  .wcb-num{font-size:22px;font-weight:700;color:var(--accent);}
+  .wcb-label{font-size:12px;color:var(--text2);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header">
+    <div class="logo">Daily <span>韓語</span></div>
+    <div class="header-right">
+      <div class="badge">⭐ <span id="xp-count">0</span> XP</div>
+      <div class="badge">🔥 <span id="streak-count">1</span></div>
+    </div>
+  </div>
+
+  <div class="level-tabs">
+    <div class="level-tab active" onclick="setLevel(0)">初級<span class="sub">BEGINNER</span></div>
+    <div class="level-tab locked" id="tab-mid" onclick="setLevel(1)">中級<span class="sub">INTERMEDIATE</span></div>
+    <div class="level-tab locked" id="tab-adv" onclick="setLevel(2)">高級<span class="sub">ADVANCED</span></div>
+  </div>
+
+  <div class="prog-wrap">
+    <span>初級進度 <span id="day-num">1</span>/25 天 → 完成初級解鎖中級</span>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:4%"></div></div>
+  </div>
+
+  <div class="main">
+
+    <!-- ===== SCREEN: WORDS ===== -->
+    <div class="screen active" id="screen-words">
+
+      <div class="today-hdr">
+        <div class="today-badge"><div class="dl">TODAY</div><div id="badge-day">1</div></div>
+        <div>
+          <div style="font-size:15px;font-weight:600;">今日單字（初級）</div>
+          <div style="font-size:12px;color:var(--text2);">每天 15 個・明天自動換新單字</div>
+        </div>
+      </div>
+
+      <!-- Word card -->
+      <div class="word-card">
+        <div class="word-counter" id="word-counter">1/15</div>
+        <div class="mode-tags">
+          <span class="mode-tag active" id="mode-learn" onclick="setMode('learn')">學習</span>
+          <span class="mode-tag" id="mode-speak" onclick="setMode('speak')">發音</span>
+        </div>
+        <button class="word-save-btn" id="save-btn" onclick="toggleSave()">☆</button>
+        <div class="word-kr" id="word-kr">안녕하세요</div>
+        <div class="word-rom" id="word-rom">annyeonghaseyo</div>
+        <div class="word-sooni" id="word-sooni">ㄢ-ㄋㄧㄤ-ㄏㄚ-ㄙㄟ-ㄧㄡ</div>
+        <div class="word-pos" id="word-pos">感嘆詞</div>
+        <div class="word-zh" id="word-zh">你好／您好</div>
+
+        <!-- Example sentence with audio & speaking -->
+        <div class="example-block">
+          <div class="example-kr" id="ex-kr">안녕하세요, 처음 뵙겠습니다.</div>
+          <div class="example-zh" id="ex-zh">您好，初次見面。</div>
+          <div class="example-actions">
+            <button class="ex-btn" onclick="playExampleAudio()">🔊 聽例句</button>
+            <button class="ex-btn" id="ex-rec-btn" onclick="startExampleRec()">🎤 跟讀練習</button>
+          </div>
+        </div>
+        <div id="ex-speak-result" style="display:none;margin-top:8px;" class="speak-result">
+          <div class="score-num score-good" id="ex-score-num">85分</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="ex-score-msg">跟讀發音不錯！</div>
+        </div>
+      </div>
+
+      <div class="nav-word-btns">
+        <button class="btn" onclick="prevWord()">← 上一個</button>
+        <button class="btn btn-accent" onclick="nextWord()">下一個 →</button>
+      </div>
+
+      <!-- Speak mode section -->
+      <div id="speak-section" style="display:none;">
+        <div class="speak-box">
+          <div class="speak-title">🎤 單字發音練習</div>
+          <div class="phoneme" id="phoneme-disp">안녕<span>하</span>세요</div>
+          <div class="speak-actions">
+            <button class="btn" onclick="playAudio()">🔊 聽標準發音</button>
+            <button class="btn btn-green" id="rec-btn" onclick="startRecording()">🎤 開始錄音</button>
+          </div>
+          <div id="speak-result" style="display:none;" class="speak-result" style="margin-top:12px;">
+            <div class="score-num" id="score-num">85分</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="score-msg">發音很棒！</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px;">參考：<span style="color:var(--accent2);" id="score-hint"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory tip -->
+      <div class="memory-tip"><strong>記憶技巧</strong>：<span id="mem-tip">...</span></div>
+
+      <!-- Phrases with translation -->
+      <div class="card">
+        <div class="card-title">延伸片語</div>
+        <div id="phrases-wrap"></div>
+      </div>
+
+      <!-- Situation -->
+      <div class="card">
+        <div class="card-title">📚 情境小故事</div>
+        <div id="situation-text" style="font-size:13px;line-height:1.7;color:var(--text2);"></div>
+        <div class="example-actions" style="margin-top:10px;">
+          <button class="ex-btn" id="sit-play-btn" onclick="playSituation()">🔊 聽情境</button>
+          <button class="ex-btn" id="sit-rec-btn" onclick="startSituationRec()">🎤 跟讀情境</button>
+        </div>
+        <div id="sit-speak-result" style="display:none;margin-top:8px;" class="speak-result">
+          <div class="score-num score-good" id="sit-score-num">80分</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="sit-score-msg">情境跟讀練習完成！</div>
+        </div>
+      </div>
+
+      <!-- Review section -->
+      <div class="review-card" id="review-section">
+        <div class="review-title">🔄 複習區（最近學過的單字）</div>
+        <div id="review-grid" class="review-grid"></div>
+        <div class="review-empty" id="review-empty" style="display:none;">學習更多單字後，這裡會顯示複習提示！</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn" style="font-size:12px;padding:7px 12px;" onclick="startReviewQuiz()">📝 快速複習測驗</button>
+          <button class="btn btn-yellow" style="font-size:12px;padding:7px 12px;" onclick="showAllReview()">全部複習單字</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== SCREEN: VOCAB BOOK ===== -->
+    <div class="screen" id="screen-vocab">
+      <div class="search-bar">
+        <input class="search-input" id="vocab-search" placeholder="搜尋已儲存單字..." oninput="renderSaved(this.value)"/>
+      </div>
+      <div class="sec-label">已儲存單字 (<span id="saved-count">0</span>)</div>
+      <div style="padding:0 16px;" id="saved-list"></div>
+      <div class="hint-text" id="no-saved">還沒有儲存的單字，學習時按 ☆ 收藏！</div>
+    </div>
+
+    <!-- ===== SCREEN: SEARCH ===== -->
+    <div class="screen" id="screen-search">
+      <div class="search-bar">
+        <input class="search-input" id="main-search" placeholder="搜尋韓文 / 中文 / 羅馬拼音 / 空耳..." oninput="searchWords(this.value)"/>
+      </div>
+
+      <!-- Word count banner -->
+      <div class="word-count-banner" id="wc-banner">
+        <div><div class="wcb-num" id="wc-total">0</div><div class="wcb-label">個單字總計</div></div>
+        <div style="text-align:right;">
+          <div style="font-size:13px;color:var(--text2);">初級 <span id="wc-beg" style="color:var(--accent);">0</span></div>
+          <div style="font-size:13px;color:var(--text2);">中級 <span id="wc-mid" style="color:var(--blue);">0</span></div>
+          <div style="font-size:13px;color:var(--text2);">高級 <span id="wc-adv" style="color:var(--purple);">0</span></div>
+        </div>
+      </div>
+
+      <div id="search-results"></div>
+      <div class="hint-text" id="search-hint" style="padding:20px 0;">輸入關鍵字搜尋 <strong id="wc-hint">0</strong> 個常用韓語單字</div>
+    </div>
+
+    <!-- ===== SCREEN: QUIZ ===== -->
+    <div class="screen" id="screen-quiz">
+      <div class="quiz-header">
+        <div class="quiz-badge"><div class="ql">QUIZ</div><div>今日</div></div>
+        <div>
+          <div style="font-size:15px;font-weight:600;">今日測驗（初級）</div>
+          <div style="font-size:12px;color:var(--text2);">10 題，今日單字 + 複習</div>
+        </div>
+      </div>
+      <div class="quiz-score-row">
+        <span>得分 <span id="quiz-score">0</span>/<span id="quiz-total">0</span></span>
+        <span>第 <span id="quiz-num">1</span>/10 題</span>
+      </div>
+      <div class="quiz-q" id="quiz-q">準備開始測驗</div>
+      <div class="quiz-opts" id="quiz-opts"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <div class="quiz-next-wrap" id="quiz-next-wrap">
+        <button class="btn btn-accent" style="width:100%;justify-content:center;" onclick="nextQuiz()">下一題 →</button>
+      </div>
+      <div style="padding:16px;display:none;" id="quiz-result">
+        <div class="stat-card" style="text-align:center;padding:24px;">
+          <div class="stat-num green-t" id="final-score">--</div>
+          <div class="stat-label">測驗完成！</div>
+          <button class="btn btn-accent" style="margin-top:16px;display:inline-flex;" onclick="startQuiz()">再測一次</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: CONVERSATION ===== -->
+    <div class="screen" id="screen-conv">
+      <div style="padding:10px 16px 4px;font-size:13px;color:var(--text2);">今日練習情境</div>
+      <div style="font-size:22px;font-weight:700;padding:0 16px 10px;" id="conv-scene">在咖啡廳點餐</div>
+      <div class="conv-chips" id="conv-chips"></div>
+      <div class="chat-box" id="chat-box"></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" placeholder="用韓文輸入..." onkeypress="if(event.key==='Enter')sendChat()"/>
+        <button class="send-btn" onclick="sendChat()">➤</button>
+      </div>
+      <div class="chat-toolbar">
+        <button class="btn" onclick="cycleScene()">🔄 換情境</button>
+        <button class="btn" onclick="translateToggle()">🔤 中文提示</button>
+        <button class="btn" onclick="playConvAudio()">🔊 聽發音</button>
+        <button class="btn" onclick="getConvHint()">💡 提示</button>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN: PROGRESS ===== -->
+    <div class="screen" id="screen-progress">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-learned">0</div><div class="stat-label">學習單字</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-saved">0</div><div class="stat-label">已儲存</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-accuracy">0%</div><div class="stat-label">測驗正確率</div></div>
+        <div class="stat-card"><div class="stat-num accent-t" id="stat-streak">1</div><div class="stat-label">連續天數</div></div>
+      </div>
+      <div class="prog-wrap" style="padding:4px 16px 8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;">今日進度</span>
+          <span style="font-size:13px;color:var(--green);" id="today-pct">0%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="today-fill" style="width:0%"></div></div>
+      </div>
+      <div style="padding:8px 16px;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">本月學習日曆</div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:8px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;">⚙ 學習設定</div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="unlockLevel(1)">🔓 解鎖中級</button>
+          <button class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="unlockLevel(2)">🔓 解鎖高級</button>
+        </div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">重置資料：</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="showReset('soft')">重置學習紀錄</button>
+          <button class="btn btn-danger" style="flex:1;justify-content:center;font-size:13px;" onclick="showReset('full')">完全重置</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showScreen('words',this)"><span class="nav-icon">📖</span>單字</button>
+    <button class="nav-btn" onclick="showScreen('vocab',this)"><span class="nav-icon">📚</span>單字本</button>
+    <button class="nav-btn" onclick="showScreen('search',this);renderWordCount()"><span class="nav-icon">🔍</span>搜尋</button>
+    <button class="nav-btn" onclick="showScreen('quiz',this);initQuiz()"><span class="nav-icon">✏️</span>測驗</button>
+    <button class="nav-btn" onclick="showScreen('conv',this)"><span class="nav-icon">💬</span>對話</button>
+    <button class="nav-btn" onclick="showScreen('progress',this);renderProgress()"><span class="nav-icon">📊</span>進度</button>
+  </div>
+
+  <div id="toast"></div>
+
+  <div class="modal-overlay" id="reset-modal">
+    <div class="modal-box">
+      <div class="modal-title">⚠ 確認重置</div>
+      <div class="modal-desc" id="reset-desc"></div>
+      <div class="modal-btns">
+        <button class="btn" onclick="closeModal()">取消</button>
+        <button class="btn btn-danger" onclick="doReset()">確認重置</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =====================================================================
+// WORD DATABASE — 60 beginner / 20 intermediate / 10 advanced
+// (Structured for easy expansion to 1500)
+// =====================================================================
+const WORDS = [
+// ── BEGINNER ──────────────────────────────────────────────────────────
+{kr:"안녕하세요",rom:"annyeonghaseyo",sooni:"ㄢ-ㄋㄧㄤ-ㄏㄚ-ㄙㄟ-ㄧㄡ",pos:"感嘆詞",zh:"你好／您好",ex_kr:"안녕하세요, 처음 뵙겠습니다.",ex_zh:"您好，初次見面。",tip:"「안녕」= 平安。正式用「안녕하세요」，朋友間用「안녕」",phrases:[{kr:"안녕",zh:"嗨"},{kr:"안녕히 가세요",zh:"慢走"},{kr:"안녕히 계세요",zh:"再見（我先走）"}],level:0,situation:"公司第一天，小明見到同事說：「안녕하세요！저는 小明입니다。」同事回：「안녕하세요！잘 부탁드립니다。」"},
+{kr:"감사합니다",rom:"gamsahamnida",sooni:"ㄎㄚㄇ-ㄙㄚ-ㄏㄚㄇ-ㄋㄧ-ㄉㄚ",pos:"感嘆詞",zh:"謝謝您",ex_kr:"도와주셔서 감사합니다.",ex_zh:"感謝您的幫助。",tip:"감사 = 感謝，比「고마워요」更正式",phrases:[{kr:"고마워요",zh:"謝謝（普通）"},{kr:"정말 감사합니다",zh:"非常感謝"},{kr:"감사해요",zh:"謝謝（輕鬆）"}],level:0,situation:"便利商店店員幫你找到商品，你說：「감사합니다！」店員微笑回：「아니에요！」"},
+{kr:"죄송합니다",rom:"joesonghamnida",sooni:"ㄓㄨㄟ-ㄙㄨㄥ-ㄏㄚㄇ-ㄋㄧ-ㄉㄚ",pos:"感嘆詞",zh:"對不起／非常抱歉",ex_kr:"늦어서 죄송합니다.",ex_zh:"抱歉我遲到了。",tip:"比「미안해요」更正式，商務場合常用",phrases:[{kr:"미안해요",zh:"對不起（普通）"},{kr:"정말 죄송합니다",zh:"真的非常抱歉"},{kr:"실례합니다",zh:"打擾了"}],level:0,situation:"開會遲到，進入會議室：「죄송합니다！늦었습니다。」上司說：「괜찮아요。」"},
+{kr:"괜찮아요",rom:"gwaenchanayo",sooni:"ㄍㄨㄞ-ㄔㄢ-ㄚ-ㄧㄡ",pos:"形容詞",zh:"沒關係／還好",ex_kr:"저는 괜찮아요.",ex_zh:"我沒事。",tip:"也可詢問：「괜찮아요?」= 你還好嗎？",phrases:[{kr:"괜찮아?",zh:"還好嗎？（朋友間）"},{kr:"다 괜찮아요",zh:"都沒關係"},{kr:"별로 안 괜찮아요",zh:"其實不太好"}],level:0,situation:"朋友不小心踩到你的腳，道歉說「미안해！」你笑著說：「괜찮아요！」"},
+{kr:"이름",rom:"ireum",sooni:"ㄧ-ㄌㄨㄇ",pos:"名詞",zh:"名字",ex_kr:"제 이름은 민준이에요.",ex_zh:"我的名字是敏俊。",tip:"自我介紹必用詞！이름 = 名字，성함 = 大名（敬語）",phrases:[{kr:"이름이 뭐예요?",zh:"你叫什麼名字？"},{kr:"성함이 어떻게 되세요?",zh:"請問您尊姓大名？"},{kr:"이름을 써주세요",zh:"請寫下您的名字"}],level:0,situation:"交換名片時對方問：「성함이 어떻게 되세요?」你回答：「제 이름은 林敏이에요。」"},
+{kr:"먹다",rom:"meokda",sooni:"ㄇㄜ-ㄎ-ㄉㄚ",pos:"動詞",zh:"吃",ex_kr:"밥을 먹어요.",ex_zh:"吃飯。",tip:"먹다→먹어요（現在）→먹었어요（過去）→먹을 거예요（未來）",phrases:[{kr:"같이 먹어요",zh:"一起吃吧"},{kr:"많이 먹어요",zh:"多吃點"},{kr:"뭐 먹을래요?",zh:"要吃什麼？"}],level:0,situation:"午餐時間，朋友說：「밥 먹었어요?」你說：「아직요！같이 먹어요！」"},
+{kr:"마시다",rom:"masida",sooni:"ㄇㄚ-ㄙㄧ-ㄉㄚ",pos:"動詞",zh:"喝",ex_kr:"커피를 마셔요.",ex_zh:"喝咖啡。",tip:"마시다→마셔요（現在）→마셨어요（過去）",phrases:[{kr:"물 마셔요",zh:"喝水"},{kr:"같이 마실래요?",zh:"要一起喝嗎？"},{kr:"커피 마시러 가요",zh:"去喝咖啡吧"}],level:0,situation:"咖啡廳裡，店員問：「뭐 마실래요?」你說：「아메리카노 주세요。」"},
+{kr:"가다",rom:"kada",sooni:"ㄎㄚ-ㄉㄚ",pos:"動詞",zh:"去",ex_kr:"학교에 가요.",ex_zh:"去學校。",tip:"가다→가요（現在）→갔어요（過去）→갈 거예요（未來）",phrases:[{kr:"같이 가요",zh:"一起去吧"},{kr:"어디 가요?",zh:"你要去哪裡？"},{kr:"먼저 갈게요",zh:"我先走了"}],level:0,situation:"下班後同事問：「어디 가요?」你說：「집에 가요！안녕히 계세요！」"},
+{kr:"오다",rom:"oda",sooni:"ㄛ-ㄉㄚ",pos:"動詞",zh:"來",ex_kr:"집에 와요.",ex_zh:"來家裡。",tip:"오다→와요（現在）→왔어요（過去）",phrases:[{kr:"빨리 와요",zh:"快點來"},{kr:"왜 안 왔어요?",zh:"為什麼沒來？"},{kr:"같이 와요",zh:"一起來"}],level:0,situation:"朋友說要來你家，你說：「언제 와요? 기다릴게요！」"},
+{kr:"사다",rom:"sada",sooni:"ㄙㄚ-ㄉㄚ",pos:"動詞",zh:"買",ex_kr:"사과를 사요.",ex_zh:"買蘋果。",tip:"사다→사요→샀어요。「살게요」= 我來買／我請客",phrases:[{kr:"내가 살게요",zh:"我來買（我請客）"},{kr:"뭐 살 거예요?",zh:"要買什麼？"},{kr:"싸게 사요",zh:"便宜買到了"}],level:0,situation:"超市裡朋友要分攤，你說：「괜찮아요！내가 살게요！」"},
+{kr:"크다",rom:"keuda",sooni:"ㄎㄨ-ㄉㄚ",pos:"形容詞",zh:"大",ex_kr:"이 가방이 너무 커요.",ex_zh:"這個包包太大了。",tip:"크다→커요。反義：작다（小）",phrases:[{kr:"너무 커요",zh:"太大了"},{kr:"조금 더 크게",zh:"再大一點"},{kr:"큰 사이즈로 주세요",zh:"請給我大號"}],level:0,situation:"買衣服試穿後說：「이거 너무 커요。더 작은 사이즈 있어요?」"},
+{kr:"작다",rom:"jakda",sooni:"ㄓㄚ-ㄎ-ㄉㄚ",pos:"形容詞",zh:"小",ex_kr:"이 방이 작아요.",ex_zh:"這個房間很小。",tip:"작다→작아요。與크다一起記憶",phrases:[{kr:"너무 작아요",zh:"太小了"},{kr:"조금 작은",zh:"稍微小一點"},{kr:"작은 사이즈",zh:"小號"}],level:0,situation:"看公寓時說：「방이 좀 작아요。더 큰 방 없어요?」"},
+{kr:"맛있다",rom:"masitda",sooni:"ㄇㄚ-ㄙㄧ-ㄊㄚ",pos:"形容詞",zh:"好吃",ex_kr:"이 음식이 정말 맛있어요.",ex_zh:"這個食物真的很好吃。",tip:"맛있다→맛있어요。맛없다 = 難吃（不好吃）",phrases:[{kr:"정말 맛있어요",zh:"真的很好吃"},{kr:"맛있겠다",zh:"看起來很好吃"},{kr:"맛있어 보여요",zh:"感覺很好吃"}],level:0,situation:"韓國朋友做了泡菜，你吃了一口說：「와！정말 맛있어요！더 주세요！」"},
+{kr:"좋다",rom:"jota",sooni:"ㄓㄛ-ㄊㄚ",pos:"形容詞",zh:"好／喜歡",ex_kr:"한국 음식을 좋아해요.",ex_zh:"我喜歡韓國食物。",tip:"좋다（狀態好）vs 좋아하다（喜歡，動作）",phrases:[{kr:"좋아요",zh:"好的／喜歡"},{kr:"정말 좋아요",zh:"真的很好"},{kr:"제일 좋아해요",zh:"最喜歡"}],level:0,situation:"被問最喜歡什麼食物，你說：「저는 삼겹살을 제일 좋아해요！」"},
+{kr:"없다",rom:"eopda",sooni:"ㄜ-ㄆ-ㄉㄚ",pos:"形容詞",zh:"沒有／不存在",ex_kr:"시간이 없어요.",ex_zh:"沒有時間。",tip:"있다（有）vs 없다（沒有），必學對比詞",phrases:[{kr:"돈이 없어요",zh:"沒有錢"},{kr:"시간이 없어요",zh:"沒有時間"},{kr:"아무도 없어요",zh:"誰也沒有"}],level:0,situation:"朋友約你出去，你說：「미안해요，오늘 시간이 없어요。다음에 만나요！」"},
+{kr:"있다",rom:"itda",sooni:"ㄧ-ㄊ-ㄉㄚ",pos:"形容詞",zh:"有／存在",ex_kr:"시간이 있어요.",ex_zh:"有時間。",tip:"있다→있어요。위치도 표현: 어디에 있어요? = 在哪裡？",phrases:[{kr:"시간 있어요?",zh:"你有時間嗎？"},{kr:"어디 있어요?",zh:"在哪裡？"},{kr:"집에 있어요",zh:"在家"}],level:0,situation:"朋友問：「지금 어디 있어요?」你說：「집에 있어요！」"},
+{kr:"하다",rom:"hada",sooni:"ㄏㄚ-ㄉㄚ",pos:"動詞",zh:"做",ex_kr:"일을 해요.",ex_zh:"工作。",tip:"가장 많이 쓰는 동사！= 最常用動詞之一",phrases:[{kr:"공부해요",zh:"讀書"},{kr:"운동해요",zh:"運動"},{kr:"뭐 해요?",zh:"在做什麼？"}],level:0,situation:"朋友打電話問：「지금 뭐 해요?」你說：「공부해요！나중에 전화할게요。」"},
+{kr:"보다",rom:"boda",sooni:"ㄅㄛ-ㄉㄚ",pos:"動詞",zh:"看",ex_kr:"영화를 봐요.",ex_zh:"看電影。",tip:"보다→봐요（現在）→봤어요（過去）",phrases:[{kr:"영화 봐요",zh:"看電影"},{kr:"같이 봐요",zh:"一起看"},{kr:"뭐 봐요?",zh:"在看什麼？"}],level:0,situation:"週末朋友問：「뭐 해요?」你說：「드라마 봐요！너무 재미있어요！」"},
+{kr:"듣다",rom:"deutda",sooni:"ㄉㄨ-ㄊ-ㄉㄚ",pos:"動詞",zh:"聽",ex_kr:"음악을 들어요.",ex_zh:"聽音樂。",tip:"듣다→들어요（注意不規則變化）",phrases:[{kr:"음악 들어요",zh:"聽音樂"},{kr:"잘 들어요",zh:"仔細聽"},{kr:"못 들었어요",zh:"沒聽到"}],level:0,situation:"通話不清楚時說：「잘 못 들었어요。다시 말씀해 주세요。」"},
+{kr:"말하다",rom:"malhada",sooni:"ㄇㄚㄌ-ㄏㄚ-ㄉㄚ",pos:"動詞",zh:"說話",ex_kr:"한국어로 말해요.",ex_zh:"用韓語說。",tip:"말=話，말하다=說話，말씀=敬語的話",phrases:[{kr:"천천히 말해주세요",zh:"請說慢一點"},{kr:"다시 말해주세요",zh:"請再說一次"},{kr:"한국어로 말해요",zh:"用韓語說"}],level:0,situation:"韓語太快跟不上，你說：「죄송한데, 천천히 말해주세요。」"},
+{kr:"쓰다",rom:"seuda",sooni:"ㄙㄨ-ㄉㄚ",pos:"動詞",zh:"寫",ex_kr:"편지를 써요.",ex_zh:"寫信。",tip:"쓰다→써요。也有「苦」「戴」的意思",phrases:[{kr:"이름을 써주세요",zh:"請寫下名字"},{kr:"메모해요",zh:"做筆記"},{kr:"편지 써요",zh:"寫信"}],level:0,situation:"填表格時工作人員說：「여기에 이름을 써주세요。」你拿筆回答：「네！」"},
+{kr:"읽다",rom:"ikda",sooni:"ㄧ-ㄎ-ㄉㄚ",pos:"動詞",zh:"讀",ex_kr:"책을 읽어요.",ex_zh:"讀書。",tip:"읽다→읽어요。ㄱ不發音，發[익다]",phrases:[{kr:"책 읽어요",zh:"看書"},{kr:"신문 읽어요",zh:"看報紙"},{kr:"크게 읽어주세요",zh:"請大聲讀"}],level:0,situation:"圖書館裡，館員說：「여기서 크게 읽으면 안 돼요。」你點頭說：「알겠습니다。」"},
+{kr:"자다",rom:"jada",sooni:"ㄓㄚ-ㄉㄚ",pos:"動詞",zh:"睡覺",ex_kr:"일찍 자요.",ex_zh:"早點睡。",tip:"자다→자요。잠 자다 = 睡覺，잠이 와요 = 想睡了",phrases:[{kr:"잘 자요",zh:"晚安（好好睡）"},{kr:"언제 자요?",zh:"幾點睡？"},{kr:"못 잤어요",zh:"沒睡好"}],level:0,situation:"晚上媽媽說：「빨리 자요！내일 일찍 일어나야 해요。」你回：「알겠어요！잘 자요！」"},
+{kr:"일어나다",rom:"ironada",sooni:"ㄧ-ㄌㄛ-ㄋㄚ-ㄉㄚ",pos:"動詞",zh:"起床",ex_kr:"일찍 일어났어요.",ex_zh:"早起了。",tip:"일어나다 = 起床，也有「發生」的意思",phrases:[{kr:"일찍 일어나요",zh:"早起"},{kr:"몇 시에 일어나요?",zh:"幾點起床？"},{kr:"늦게 일어났어요",zh:"起晚了"}],level:0,situation:"朋友問：「오늘 몇 시에 일어났어요?」你說：「7시에 일어났어요。」"},
+{kr:"학교",rom:"hakgyo",sooni:"ㄏㄚ-ㄎ-ㄍㄧㄡ",pos:"名詞",zh:"學校",ex_kr:"학교에 가요.",ex_zh:"去學校。",tip:"학교（學校），대학교（大學），초등학교（小學）",phrases:[{kr:"학교에 가요",zh:"去學校"},{kr:"학교 끝났어요",zh:"學校放學了"},{kr:"학교 친구",zh:"同學"}],level:0,situation:"早上媽媽說：「빨리 학교 가！늦겠다！」你說：「알았어요！」"},
+{kr:"집",rom:"jip",sooni:"ㄓㄧ-ㄆ",pos:"名詞",zh:"家／房子",ex_kr:"집에 있어요.",ex_zh:"在家。",tip:"집 = 家，우리 집 = 我家，집에 가요 = 回家",phrases:[{kr:"집에 가요",zh:"回家"},{kr:"우리 집",zh:"我家"},{kr:"집 어디예요?",zh:"家在哪裡？"}],level:0,situation:"朋友問你的位置，你說：「저 지금 집이에요。오늘 나가기 싫어요。」"},
+{kr:"밥",rom:"bap",sooni:"ㄅㄚ-ㄆ",pos:"名詞",zh:"飯",ex_kr:"밥 먹었어요?",ex_zh:"吃飯了嗎？",tip:"밥 = 飯，韓國人打招呼常說「밥 먹었어요?」",phrases:[{kr:"밥 먹어요",zh:"吃飯"},{kr:"밥 됐어요",zh:"飯好了"},{kr:"밥 사줄게요",zh:"我請你吃飯"}],level:0,situation:"朋友見面第一句：「밥 먹었어요?」你說：「아직요！같이 먹으러 가요！」"},
+{kr:"물",rom:"mul",sooni:"ㄇㄨㄌ",pos:"名詞",zh:"水",ex_kr:"물 주세요.",ex_zh:"請給我水。",tip:"물 = 水，물이 먹고 싶어요 = 想喝水",phrases:[{kr:"물 주세요",zh:"請給我水"},{kr:"냉수 주세요",zh:"請給我冷水"},{kr:"물 마셔요",zh:"喝水"}],level:0,situation:"餐廳入座後，你說：「실례합니다！물 주세요。」服務生說：「네！잠깐만요。」"},
+{kr:"친구",rom:"chingu",sooni:"ㄔㄧㄣ-ㄍㄨ",pos:"名詞",zh:"朋友",ex_kr:"친구를 만나요.",ex_zh:"見朋友。",tip:"친구 = 朋友（同輩），선배 = 前輩，후배 = 後輩",phrases:[{kr:"친구 만나요",zh:"見朋友"},{kr:"좋은 친구",zh:"好朋友"},{kr:"친구 있어요?",zh:"有朋友嗎？"}],level:0,situation:"媽媽問今天計劃，你說：「친구 만나러 가요。저녁에 들어올게요。」"},
+{kr:"가족",rom:"gajok",sooni:"ㄎㄚ-ㄓㄛ-ㄎ",pos:"名詞",zh:"家人／家族",ex_kr:"가족이 몇 명이에요?",ex_zh:"家裡有幾個人？",tip:"가족 = 家族，부모님 = 父母，형제 = 兄弟",phrases:[{kr:"가족이 뭐해요?",zh:"家人在做什麼？"},{kr:"가족이랑 같이",zh:"跟家人一起"},{kr:"가족 소개",zh:"介紹家人"}],level:0,situation:"見面時有人問：「가족이 몇 명이에요?」你說：「네 명이에요。부모님이랑 언니가 있어요。」"},
+{kr:"선생님",rom:"seonsaengnim",sooni:"ㄙㄜㄣ-ㄙㄥ-ㄋㄧㄇ",pos:"名詞",zh:"老師",ex_kr:"선생님은 어디 계세요?",ex_zh:"老師在哪裡？",tip:"선생님 = 老師，也可用來稱呼比自己年長的人",phrases:[{kr:"선생님 감사합니다",zh:"謝謝老師"},{kr:"선생님 질문 있어요",zh:"老師，我有問題"},{kr:"한국어 선생님",zh:"韓語老師"}],level:0,situation:"上課前學生說：「선생님, 오늘 수업 재미있었어요！감사합니다。」"},
+{kr:"시간",rom:"sigan",sooni:"ㄙㄧ-ㄍㄢ",pos:"名詞",zh:"時間",ex_kr:"시간이 없어요.",ex_zh:"沒有時間。",tip:"시간 = 時間，몇 시 = 幾點，시간이 있다 = 有空",phrases:[{kr:"시간 있어요?",zh:"有空嗎？"},{kr:"시간이 없어요",zh:"沒時間"},{kr:"몇 시예요?",zh:"幾點了？"}],level:0,situation:"想約人出去，你說：「이번 주말에 시간 있어요? 같이 놀러 가요！」"},
+{kr:"돈",rom:"don",sooni:"ㄉㄛ-ㄣ",pos:"名詞",zh:"錢",ex_kr:"돈이 없어요.",ex_zh:"沒有錢。",tip:"돈 = 錢，얼마예요? = 多少錢？",phrases:[{kr:"얼마예요?",zh:"多少錢？"},{kr:"돈이 없어요",zh:"沒有錢"},{kr:"카드 돼요?",zh:"可以刷卡嗎？"}],level:0,situation:"在商店問：「이거 얼마예요?」店員說：「만 원이에요。」"},
+{kr:"음식",rom:"eumsik",sooni:"ㄜㄇ-ㄙㄧ-ㄎ",pos:"名詞",zh:"食物",ex_kr:"한국 음식을 좋아해요.",ex_zh:"我喜歡韓國食物。",tip:"음식 = 食物，먹을 것 = 吃的東西",phrases:[{kr:"한국 음식",zh:"韓國料理"},{kr:"맛있는 음식",zh:"好吃的食物"},{kr:"음식 주문해요",zh:"點餐"}],level:0,situation:"外國朋友問你：「제일 좋아하는 음식이 뭐예요?」你說：「저는 삼겹살을 제일 좋아해요！」"},
+{kr:"날씨",rom:"nalsi",sooni:"ㄋㄚㄌ-ㄙㄧ",pos:"名詞",zh:"天氣",ex_kr:"오늘 날씨가 좋아요.",ex_zh:"今天天氣很好。",tip:"날씨 = 天氣，덥다 = 熱，춥다 = 冷",phrases:[{kr:"날씨가 좋아요",zh:"天氣很好"},{kr:"오늘 날씨 어때요?",zh:"今天天氣怎樣？"},{kr:"비가 와요",zh:"下雨了"}],level:0,situation:"早上出門前你說：「오늘 날씨가 너무 좋아요！산책하러 가요！」"},
+{kr:"오늘",rom:"oneul",sooni:"ㄛ-ㄋㄨㄌ",pos:"名詞",zh:"今天",ex_kr:"오늘 뭐 해요?",ex_zh:"今天在做什麼？",tip:"오늘（今天），어제（昨天），내일（明天）三個一起記",phrases:[{kr:"오늘 뭐 해요?",zh:"今天做什麼？"},{kr:"오늘 너무 힘들어요",zh:"今天好累"},{kr:"오늘 날씨",zh:"今天的天氣"}],level:0,situation:"Monday morning，同事問：「오늘 뭐 먹었어요?」你說：「오늘은 김밥 먹었어요！」"},
+{kr:"어디",rom:"eodi",sooni:"ㄜ-ㄉㄧ",pos:"代詞",zh:"哪裡",ex_kr:"어디 가요?",ex_zh:"去哪裡？",tip:"어디 = 哪裡，여기 = 這裡，거기 = 那裡，저기 = 那邊",phrases:[{kr:"어디 가요?",zh:"去哪裡？"},{kr:"어디 있어요?",zh:"在哪裡？"},{kr:"어디서 왔어요?",zh:"從哪裡來的？"}],level:0,situation:"迷路了，你向路人問：「실례합니다！지하철역이 어디예요?」"},
+{kr:"무엇",rom:"muot",sooni:"ㄇㄨ-ㄜ-ㄊ",pos:"代詞",zh:"什麼",ex_kr:"이게 무엇이에요?",ex_zh:"這是什麼？",tip:"무엇 = 什麼，口語常說「뭐」",phrases:[{kr:"뭐예요?",zh:"是什麼？"},{kr:"뭐 먹을래요?",zh:"要吃什麼？"},{kr:"뭐가 좋아요?",zh:"什麼好？"}],level:0,situation:"看到不認識的食物，你問：「이거 뭐예요? 맛있어 보여요！」"},
+{kr:"얼마나",rom:"eolmana",sooni:"ㄜㄌ-ㄇㄚ-ㄋㄚ",pos:"副詞",zh:"多少（程度）",ex_kr:"얼마나 걸려요?",ex_zh:"要多久？",tip:"얼마나 = 多少（程度），얼마 = 多少（金額）",phrases:[{kr:"얼마나 걸려요?",zh:"要多久？"},{kr:"얼마나 멀어요?",zh:"有多遠？"},{kr:"얼마나 좋아요?",zh:"有多好？"}],level:0,situation:"問路時你說：「지하철역까지 얼마나 걸려요?」路人說：「10분 걸려요。」"},
+{kr:"왜",rom:"wae",sooni:"ㄨㄞ",pos:"副詞",zh:"為什麼",ex_kr:"왜 늦었어요?",ex_zh:"為什麼遲到了？",tip:"왜 = 為什麼，왜냐하면 = 因為（書面）",phrases:[{kr:"왜요?",zh:"為什麼？"},{kr:"왜 그래요?",zh:"為什麼這樣？"},{kr:"왜 안 해요?",zh:"為什麼不做？"}],level:0,situation:"老師問：「왜 숙제를 안 했어요?」你說：「죄송해요。깜빡했어요。」"},
+{kr:"어떻게",rom:"eotteoke",sooni:"ㄜ-ㄊㄜ-ㄎㄟ",pos:"副詞",zh:"怎麼樣／如何",ex_kr:"어떻게 가요?",ex_zh:"怎麼去？",tip:"어떻게 = 怎麼，어떻다 = 怎樣",phrases:[{kr:"어떻게 가요?",zh:"怎麼去？"},{kr:"어떻게 해요?",zh:"怎麼辦？"},{kr:"어떻게 됐어요?",zh:"後來怎樣了？"}],level:0,situation:"不知道怎麼用韓文，你問：「이거 한국어로 어떻게 말해요?」"},
+{kr:"언제",rom:"eonje",sooni:"ㄜㄣ-ㄓㄟ",pos:"副詞",zh:"什麼時候",ex_kr:"언제 와요?",ex_zh:"什麼時候來？",tip:"언제 = 什麼時候，오늘（今天）어제（昨天）내일（明天）",phrases:[{kr:"언제 와요?",zh:"什麼時候來？"},{kr:"언제 시간 있어요?",zh:"什麼時候有空？"},{kr:"언제부터요?",zh:"從什麼時候開始？"}],level:0,situation:"想安排見面，你說：「언제 시간 있어요? 같이 밥 먹어요！」"},
+{kr:"지금",rom:"jigeum",sooni:"ㄓㄧ-ㄍㄨㄇ",pos:"副詞",zh:"現在",ex_kr:"지금 뭐 해요?",ex_zh:"現在在做什麼？",tip:"지금 = 現在，지금 바로 = 馬上，조금 후에 = 待會兒",phrases:[{kr:"지금 어디예요?",zh:"現在在哪？"},{kr:"지금 바로 갈게요",zh:"我馬上去"},{kr:"지금은 바빠요",zh:"現在很忙"}],level:0,situation:"朋友打來問：「지금 어디야?」你說：「지금 지하철이에요！10분 후에 도착해요。」"},
+{kr:"많다",rom:"manta",sooni:"ㄇㄢ-ㄊㄚ",pos:"形容詞",zh:"多",ex_kr:"사람이 많아요.",ex_zh:"人很多。",tip:"많다→많아요。적다（少）와 함께 기억！",phrases:[{kr:"사람 많아요",zh:"人很多"},{kr:"너무 많아요",zh:"太多了"},{kr:"얼마나 많아요?",zh:"有多少？"}],level:0,situation:"週末逛市場，你說：「와！사람이 너무 많아요。다른 데 가요！」"},
+{kr:"적다",rom:"jeokda",sooni:"ㄓㄜ-ㄎ-ㄉㄚ",pos:"形容詞",zh:"少",ex_kr:"시간이 너무 적어요.",ex_zh:"時間太少了。",tip:"적다（少）vs 많다（多），形容數量",phrases:[{kr:"적어요",zh:"很少"},{kr:"조금 적어요",zh:"稍微少"},{kr:"너무 적어요",zh:"太少了"}],level:0,situation:"餐廳點的份量不夠，你說：「죄송한데, 양이 조금 적어요。더 주실 수 있어요?」"},
+{kr:"빠르다",rom:"ppareuda",sooni:"ㄆㄚ-ㄌㄨ-ㄉㄚ",pos:"形容詞",zh:"快",ex_kr:"지하철이 빨라요.",ex_zh:"地鐵很快。",tip:"빠르다→빨라요（不規則）。반대 = 느리다（慢）",phrases:[{kr:"빨리 와요",zh:"快點來"},{kr:"더 빨리요",zh:"再快一點"},{kr:"너무 빨라요",zh:"太快了"}],level:0,situation:"上課老師說得太快，你說：「선생님！너무 빨라요。천천히 말해주세요。」"},
+{kr:"느리다",rom:"neurida",sooni:"ㄋㄨ-ㄌㄧ-ㄉㄚ",pos:"形容詞",zh:"慢",ex_kr:"버스가 너무 느려요.",ex_zh:"公車太慢了。",tip:"느리다→느려요（不規則）",phrases:[{kr:"너무 느려요",zh:"太慢了"},{kr:"조금 느리게",zh:"稍微慢一點"},{kr:"천천히 해요",zh:"慢慢來"}],level:0,situation:"等朋友遲遲不來，你說：「야！너무 느려요！빨리 오세요！」"},
+{kr:"새",rom:"sae",sooni:"ㄙㄟ",pos:"形容詞",zh:"新的",ex_kr:"새 핸드폰 샀어요.",ex_zh:"買了新手機。",tip:"새 = 新的，새로운 = 嶄新的（較強調）",phrases:[{kr:"새 거예요?",zh:"是新的嗎？"},{kr:"새로 샀어요",zh:"新買的"},{kr:"새해 복 많이 받으세요",zh:"新年快樂"}],level:0,situation:"朋友看到你的手機說：「어！새 핸드폰이에요?」你說：「네！어제 샀어요！」"},
+{kr:"같이",rom:"gachi",sooni:"ㄎㄚ-ㄔㄧ",pos:"副詞",zh:"一起",ex_kr:"같이 가요.",ex_zh:"一起去吧。",tip:"같이 = 함께 = 一起，邀請別人時常用",phrases:[{kr:"같이 가요",zh:"一起去吧"},{kr:"같이 먹어요",zh:"一起吃吧"},{kr:"같이 해요",zh:"一起做吧"}],level:0,situation:"看到有趣的活動，你說：「같이 가요！너무 재미있어 보여요！」"},
+{kr:"혼자",rom:"honja",sooni:"ㄏㄛㄣ-ㄓㄚ",pos:"副詞",zh:"獨自",ex_kr:"혼자 왔어요.",ex_zh:"一個人來了。",tip:"혼자 = 一個人，혼밥 = 一個人吃飯（流行語）",phrases:[{kr:"혼자예요?",zh:"一個人嗎？"},{kr:"혼자 왔어요",zh:"一個人來的"},{kr:"혼자 해요",zh:"自己做"}],level:0,situation:"朋友看你一個人說：「어！혼자 왔어요?」你說：「네，오늘은 혼자예요。」"},
+{kr:"사람",rom:"saram",sooni:"ㄙㄚ-ㄌㄚㄇ",pos:"名詞",zh:"人",ex_kr:"한국 사람이에요?",ex_zh:"是韓國人嗎？",tip:"사람 = 人，인간 = 人類，분 = 敬語的人",phrases:[{kr:"한국 사람",zh:"韓國人"},{kr:"좋은 사람",zh:"好人"},{kr:"이 사람이 누구예요?",zh:"這個人是誰？"}],level:0,situation:"聽到有人說韓語，你問：「혹시 한국 사람이에요?」"},
+{kr:"나라",rom:"nara",sooni:"ㄋㄚ-ㄌㄚ",pos:"名詞",zh:"國家",ex_kr:"어느 나라 사람이에요?",ex_zh:"你是哪個國家的人？",tip:"나라 = 國家，국가 = 國家（書面），한국 = 韓國",phrases:[{kr:"어느 나라예요?",zh:"哪個國家？"},{kr:"한국이 좋아요",zh:"喜歡韓國"},{kr:"나라마다 달라요",zh:"每個國家不同"}],level:0,situation:"與外國人聊天，你問：「어느 나라 사람이에요? 한국 사람이에요?」"},
+{kr:"언어",rom:"eoneo",sooni:"ㄜㄣ-ㄜ",pos:"名詞",zh:"語言",ex_kr:"한국어를 배워요.",ex_zh:"學習韓語。",tip:"언어 = 語言，한국어 = 韓語，영어 = 英語",phrases:[{kr:"한국어 배워요",zh:"學韓語"},{kr:"한국어 잘해요?",zh:"韓語說得好嗎？"},{kr:"몇 가지 언어 해요?",zh:"會幾種語言？"}],level:0,situation:"告訴別人你在學韓語：「저는 요즘 한국어를 배우고 있어요！너무 재미있어요。」"},
+{kr:"공부",rom:"gongbu",sooni:"ㄍㄨㄥ-ㄅㄨ",pos:"名詞",zh:"學習",ex_kr:"공부를 열심히 해요.",ex_zh:"努力學習。",tip:"공부하다 = 學習，공부 = 學習（名詞形）",phrases:[{kr:"공부해요",zh:"在學習"},{kr:"같이 공부해요",zh:"一起學習吧"},{kr:"공부 열심히 해요",zh:"努力學習"}],level:0,situation:"考試前，你說：「내일 시험이에요。오늘 밤 공부해야 해요！」"},
+{kr:"일",rom:"il",sooni:"ㄧ-ㄌ",pos:"名詞",zh:"工作／事情",ex_kr:"일이 많아요.",ex_zh:"工作很多。",tip:"일 = 工作/事情，일하다 = 工作，일이 있어요 = 有事",phrases:[{kr:"일이 있어요",zh:"有事"},{kr:"일 잘해요",zh:"工作做得好"},{kr:"무슨 일이에요?",zh:"什麼事？"}],level:0,situation:"朋友約你，你說：「미안해요。오늘 일이 있어요。다음에 만나요。」"},
+{kr:"전화",rom:"jeonhwa",sooni:"ㄓㄜㄣ-ㄏㄨㄚ",pos:"名詞",zh:"電話",ex_kr:"전화해 주세요.",ex_zh:"請打電話給我。",tip:"전화하다 = 打電話，전화 번호 = 電話號碼",phrases:[{kr:"전화해 주세요",zh:"請打電話給我"},{kr:"전화 번호 있어요?",zh:"有電話號碼嗎？"},{kr:"전화 받아요",zh:"接電話"}],level:0,situation:"要聯繫朋友，你說：「나중에 전화해 주세요。중요한 얘기가 있어요。」"},
+{kr:"문제",rom:"munje",sooni:"ㄇㄨㄣ-ㄓㄟ",pos:"名詞",zh:"問題",ex_kr:"문제가 있어요.",ex_zh:"有問題。",tip:"문제 = 問題，질문 = 詢問的問題，문제없어요 = 沒問題",phrases:[{kr:"문제없어요",zh:"沒問題"},{kr:"무슨 문제예요?",zh:"什麼問題？"},{kr:"큰 문제예요",zh:"是大問題"}],level:0,situation:"老師問完後問：「질문 있어요?」你舉手說：「네！문제가 있어요。」"},
+
+// ── INTERMEDIATE ──────────────────────────────────────────────────────
+{kr:"회의",rom:"hoei",sooni:"ㄏㄨㄟ-ㄧ",pos:"名詞",zh:"會議",ex_kr:"오늘 오후에 회의가 있어요.",ex_zh:"今天下午有會議。",tip:"회의 = 會議，회의실 = 會議室，회의하다 = 開會",phrases:[{kr:"회의실에 가요",zh:"去會議室"},{kr:"회의 중이에요",zh:"正在開會"},{kr:"회의가 취소됐어요",zh:"會議取消了"}],level:1,situation:""},
+{kr:"업무",rom:"eommu",sooni:"ㄛㄇ-ㄇㄨ",pos:"名詞",zh:"業務／工作內容",ex_kr:"업무가 너무 많아요.",ex_zh:"業務太多了。",tip:"업무 = 業務，직장 = 職場，업무 시간 = 上班時間",phrases:[{kr:"업무 처리해요",zh:"處理業務"},{kr:"업무 보고",zh:"業務報告"},{kr:"업무 시간",zh:"上班時間"}],level:1,situation:""},
+{kr:"보고서",rom:"bogoseo",sooni:"ㄅㄛ-ㄍㄛ-ㄙㄜ",pos:"名詞",zh:"報告書",ex_kr:"보고서를 제출했어요.",ex_zh:"提交了報告書。",tip:"보고（報告）＋서（書）",phrases:[{kr:"보고서 작성",zh:"撰寫報告書"},{kr:"보고서 제출",zh:"提交報告書"},{kr:"보고서 검토",zh:"審查報告書"}],level:1,situation:""},
+{kr:"경험",rom:"gyeonghyeom",sooni:"ㄎㄧㄥ-ㄏㄧㄜㄇ",pos:"名詞",zh:"經驗",ex_kr:"다양한 경험이 있어요.",ex_zh:"有各種各樣的經驗。",tip:"경험하다 = 親身體驗",phrases:[{kr:"경험이 있어요?",zh:"有這方面的經驗嗎？"},{kr:"새로운 경험",zh:"新的體驗"},{kr:"경험을 쌓아요",zh:"累積經驗"}],level:1,situation:""},
+{kr:"계획",rom:"gyehoek",sooni:"ㄎㄧㄝ-ㄏㄨㄟ-ㄎ",pos:"名詞",zh:"計劃",ex_kr:"여행 계획을 세워요.",ex_zh:"制定旅行計劃。",tip:"계획을 세우다 = 制定計劃",phrases:[{kr:"계획이 있어요?",zh:"有計劃嗎？"},{kr:"계획을 세워요",zh:"制定計劃"},{kr:"계획대로 해요",zh:"按計劃進行"}],level:1,situation:""},
+{kr:"결정",rom:"gyeoljeong",sooni:"ㄎㄧㄜㄌ-ㄓㄥ",pos:"名詞",zh:"決定",ex_kr:"빨리 결정해야 해요.",ex_zh:"要快點決定。",tip:"결정하다 = 決定，결정을 내리다 = 做出決定",phrases:[{kr:"결정했어요?",zh:"決定了嗎？"},{kr:"어떻게 결정해요?",zh:"怎麼決定？"},{kr:"최종 결정",zh:"最終決定"}],level:1,situation:""},
+{kr:"문화",rom:"munhwa",sooni:"ㄇㄨㄣ-ㄏㄨㄚ",pos:"名詞",zh:"文化",ex_kr:"한국 문화를 좋아해요.",ex_zh:"喜歡韓國文化。",tip:"문화 = 文化，문화 차이 = 文化差異",phrases:[{kr:"한국 문화",zh:"韓國文化"},{kr:"문화 차이",zh:"文化差異"},{kr:"문화를 배워요",zh:"學習文化"}],level:1,situation:""},
+{kr:"관계",rom:"gwangye",sooni:"ㄍㄨㄢ-ㄎㄧㄝ",pos:"名詞",zh:"關係",ex_kr:"좋은 관계를 유지해요.",ex_zh:"維持良好關係。",tip:"관계 = 關係，인간관계 = 人際關係",phrases:[{kr:"좋은 관계",zh:"好關係"},{kr:"관계가 좋아요",zh:"關係很好"},{kr:"관계를 유지해요",zh:"維持關係"}],level:1,situation:""},
+{kr:"방법",rom:"bangbeop",sooni:"ㄅㄤ-ㄅㄜ-ㄆ",pos:"名詞",zh:"方法",ex_kr:"다른 방법이 있어요.",ex_zh:"有其他方法。",tip:"방법 = 方法，방식 = 方式，수단 = 手段",phrases:[{kr:"좋은 방법",zh:"好方法"},{kr:"방법이 없어요",zh:"沒有方法"},{kr:"다른 방법으로",zh:"用其他方法"}],level:1,situation:""},
+{kr:"상황",rom:"sanghwang",sooni:"ㄙㄤ-ㄏㄨㄤ",pos:"名詞",zh:"狀況",ex_kr:"상황이 안 좋아요.",ex_zh:"狀況不好。",tip:"상황 = 狀況，상황 파악 = 了解狀況",phrases:[{kr:"상황이 어때요?",zh:"狀況怎樣？"},{kr:"긴급 상황",zh:"緊急狀況"},{kr:"상황을 봐요",zh:"看情況"}],level:1,situation:""},
+
+// ── ADVANCED ──────────────────────────────────────────────────────────
+{kr:"협상",rom:"hyeopsang",sooni:"ㄏㄧㄝ-ㄆ-ㄙㄤ",pos:"名詞",zh:"協商／談判",ex_kr:"협상이 잘 됐어요.",ex_zh:"談判進展順利。",tip:"협상하다 = 進行談判，협상 테이블 = 談判桌",phrases:[{kr:"협상 결과",zh:"談判結果"},{kr:"협상을 시작해요",zh:"開始談判"},{kr:"협상 타결",zh:"達成協議"}],level:2,situation:""},
+{kr:"전략",rom:"jeollyak",sooni:"ㄓㄜㄌ-ㄌㄧㄚ-ㄎ",pos:"名詞",zh:"戰略",ex_kr:"새로운 전략이 필요해요.",ex_zh:"需要新的戰略。",tip:"전략적 = 戰略性的，전략을 세우다 = 制定戰略",phrases:[{kr:"전략적으로",zh:"戰略性地"},{kr:"마케팅 전략",zh:"行銷戰略"},{kr:"전략을 세워요",zh:"制定戰略"}],level:2,situation:""},
+{kr:"분석",rom:"bunsek",sooni:"ㄅㄨㄣ-ㄙㄜ-ㄎ",pos:"名詞",zh:"分析",ex_kr:"데이터를 분석해요.",ex_zh:"分析數據。",tip:"분석하다 = 分析，분석 결과 = 分析結果",phrases:[{kr:"데이터 분석",zh:"數據分析"},{kr:"분석 결과",zh:"分析結果"},{kr:"심층 분석",zh:"深度分析"}],level:2,situation:""},
+{kr:"혁신",rom:"hyeoksin",sooni:"ㄏㄧㄜ-ㄎ-ㄙㄧㄣ",pos:"名詞",zh:"革新／創新",ex_kr:"기술 혁신이 중요해요.",ex_zh:"技術創新很重要。",tip:"혁신 = 革新，혁신적 = 創新的",phrases:[{kr:"기술 혁신",zh:"技術革新"},{kr:"혁신적인 아이디어",zh:"創新想法"},{kr:"혁신을 추구해요",zh:"追求創新"}],level:2,situation:""},
+{kr:"효율",rom:"hyoyul",sooni:"ㄏㄧㄡ-ㄧㄨㄌ",pos:"名詞",zh:"效率",ex_kr:"업무 효율을 높여요.",ex_zh:"提高工作效率。",tip:"효율 = 效率，효과 = 效果，효율적 = 高效的",phrases:[{kr:"효율적으로",zh:"高效率地"},{kr:"효율을 높여요",zh:"提高效率"},{kr:"효율이 좋아요",zh:"效率很好"}],level:2,situation:""},
+];
+
+// =====================================================================
+// CONVERSATION DATA
+// =====================================================================
+const CONVS = [
+  {scene:"在咖啡廳點餐",chips:["아메리카노 주세요","얼마예요?","테이크아웃이요","영수증 주세요"],opening:{kr:"어서 오세요！무엇을 드릴까요？",zh:"歡迎光臨！請問要點什麼？"}},
+  {scene:"在超市購物",chips:["이거 얼마예요?","어디에 있어요?","봉투 주세요","카드 돼요?"],opening:{kr:"안녕하세요！필요한 거 있으세요？",zh:"您好！有需要幫忙的嗎？"}},
+  {scene:"問路",chips:["지하철역이 어디예요?","얼마나 걸려요?","감사합니다","이 근처에 편의점 있어요?"],opening:{kr:"어디 찾으세요？",zh:"你在找哪裡？"}},
+  {scene:"在餐廳用餐",chips:["메뉴 주세요","이거로 할게요","맵지 않게 해주세요","계산서 주세요"],opening:{kr:"어서 오세요！몇 분이세요？",zh:"歡迎！請問幾位？"}},
+  {scene:"買衣服",chips:["이거 입어봐도 돼요?","다른 색 있어요?","좀 크네요","깎아주세요"],opening:{kr:"안녕하세요！찾으시는 거 있으세요？",zh:"您好！有找什麼嗎？"}},
+];
+const CONV_RESP = {
+  "아메리카노":{kr:"아메리카노 한 잔이요？ 사이즈는요？",zh:"美式咖啡一杯嗎？要什麼尺寸？"},
+  "얼마":{kr:"2,000원입니다。",zh:"2000韓圓。"},
+  "주세요":{kr:"네！잠깐만요。",zh:"好的！請稍等。"},
+  "감사":{kr:"감사합니다！또 오세요！",zh:"謝謝！歡迎再來！"},
+  "어디":{kr:"저기 왼쪽으로 가시면 됩니다。",zh:"往那邊左轉就到了。"},
+  "안녕":{kr:"안녕하세요！오늘도 좋은 하루 되세요！",zh:"您好！祝您今天愉快！"},
+  "default":{kr:"네, 알겠습니다！",zh:"好的，了解！"},
+};
+
+// =====================================================================
+// STATE
+// =====================================================================
+let S = JSON.parse(localStorage.getItem('dk2State')||'null') || {
+  level:0, unlockedLevels:[0], dayIndex:0, wordIndex:0,
+  savedWords:[], xp:0, streak:1, studiedDays:[new Date().getDate()],
+  learnedWords:[], quizHistory:[], convScene:0, mode:'learn',
+};
+function save(){localStorage.setItem('dk2State',JSON.stringify(S));}
+
+// =====================================================================
+// WORD HELPERS
+// =====================================================================
+function wordsForLevel(l){return WORDS.filter(w=>w.level===l);}
+function todayWords(){
+  const all=wordsForLevel(S.level), per=15;
+  const start=(S.dayIndex*per)%all.length;
+  return Array.from({length:per},(_,i)=>all[(start+i)%all.length]);
+}
+function curWord(){return todayWords()[S.wordIndex]||todayWords()[0];}
+
+// =====================================================================
+// RENDER WORD
+// =====================================================================
+function renderWord(){
+  const w=curWord(); if(!w)return;
+  document.getElementById('word-kr').textContent=w.kr;
+  document.getElementById('word-rom').textContent=w.rom;
+  document.getElementById('word-sooni').textContent=w.sooni;
+  document.getElementById('word-pos').textContent=w.pos;
+  document.getElementById('word-zh').textContent=w.zh;
+  document.getElementById('ex-kr').textContent=w.ex_kr;
+  document.getElementById('ex-zh').textContent=w.ex_zh;
+  document.getElementById('mem-tip').textContent=w.tip;
+  document.getElementById('word-counter').textContent=`${S.wordIndex+1}/${todayWords().length}`;
+
+  // phoneme: highlight middle char
+  const kr=w.kr, mid=Math.floor(kr.length/2);
+  document.getElementById('phoneme-disp').innerHTML=kr.split('').map((c,i)=>i===mid?`<span>${c}</span>`:c).join('');
+  document.getElementById('score-hint').textContent=w.rom+' ('+w.sooni+')';
+
+  // phrases with translation
+  const pw=document.getElementById('phrases-wrap'); pw.innerHTML='';
+  (w.phrases||[]).forEach(p=>{
+    const d=document.createElement('div');
+    d.className='phrase-row';
+    d.innerHTML=`<div class="phrase-kr">${p.kr}</div>
+      <div class="phrase-zh">${p.zh}</div>
+      <button class="phrase-play" onclick="event.stopPropagation();playTTS('${p.kr.replace(/'/g,"\\'")}')">🔊</button>`;
+    pw.appendChild(d);
+  });
+
+  // situation
+  document.getElementById('situation-text').textContent=w.situation||'（此單字暫無情境故事）';
+
+  // save btn
+  const saved=S.savedWords.includes(w.kr);
+  const btn=document.getElementById('save-btn');
+  btn.textContent=saved?'★':'☆';
+  btn.className='word-save-btn'+(saved?' saved':'');
+
+  // hide speak result
+  document.getElementById('speak-result').style.display='none';
+  document.getElementById('ex-speak-result').style.display='none';
+  document.getElementById('sit-speak-result').style.display='none';
+
+  // track learned
+  if(!S.learnedWords.includes(w.kr)){
+    S.learnedWords.push(w.kr);
+    S.xp+=5; save();
+    document.getElementById('xp-count').textContent=S.xp;
+  }
+
+  renderReview();
+}
+
+function nextWord(){
+  const words=todayWords();
+  S.wordIndex=S.wordIndex<words.length-1?S.wordIndex+1:0;
+  if(S.wordIndex===0) toast('🎉 今日單字學習完成！');
+  save(); renderWord();
+}
+function prevWord(){
+  if(S.wordIndex>0) S.wordIndex--;
+  save(); renderWord();
+}
+function toggleSave(){
+  const w=curWord();
+  const idx=S.savedWords.indexOf(w.kr);
+  if(idx===-1){S.savedWords.push(w.kr);toast('⭐ 已儲存單字！');}
+  else{S.savedWords.splice(idx,1);toast('移除儲存');}
+  save(); renderWord();
+}
+
+// =====================================================================
+// REVIEW SECTION
+// =====================================================================
+function renderReview(){
+  const grid=document.getElementById('review-grid');
+  const empty=document.getElementById('review-empty');
+  // Show last 6 learned words (excluding current)
+  const recent=S.learnedWords.filter(kr=>kr!==curWord().kr).slice(-6).reverse();
+  if(!recent.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML='';
+  recent.forEach(kr=>{
+    const w=WORDS.find(x=>x.kr===kr); if(!w)return;
+    const d=document.createElement('div');
+    d.className='review-chip';
+    d.innerHTML=`<div class="review-chip-kr">${w.kr}</div>
+      <div class="review-chip-rom">${w.rom}</div>
+      <div class="review-chip-zh">${w.zh}</div>`;
+    d.onclick=()=>{playTTS(w.kr);toast(`🔊 ${w.kr} = ${w.zh}`);};
+    grid.appendChild(d);
+  });
+}
+
+function startReviewQuiz(){
+  // Set quiz to use learned words only
+  const recent=S.learnedWords.slice(-10);
+  if(recent.length<4){toast('❗ 至少學習 4 個單字才能進行複習測驗！');return;}
+  showScreen('quiz',document.querySelectorAll('.nav-btn')[3]);
+  initQuiz(true);
+}
+
+function showAllReview(){
+  // Jump to vocab search with filter
+  showScreen('search',document.querySelectorAll('.nav-btn')[2]);
+  const inp=document.getElementById('main-search');
+  inp.value='';
+  searchWords('');
+  // Show all learned words
+  const results=WORDS.filter(w=>S.learnedWords.includes(w.kr));
+  const container=document.getElementById('search-results');
+  const hint=document.getElementById('search-hint');
+  hint.style.display='none';
+  container.innerHTML='';
+  if(!results.length){container.innerHTML='<div class="hint-text" style="padding:30px 0;">還沒有學過的單字</div>';return;}
+  document.getElementById('wc-banner').style.display='none';
+  results.forEach(w=>{
+    const d=document.createElement('div');
+    d.className='sr-item';
+    d.innerHTML=`<div class="sr-kr">${w.kr}</div>
+      <div class="sr-row">
+        <span style="color:var(--accent2)">${w.rom}</span>
+        <span>・</span><span>${w.zh}</span>
+        <span style="font-size:11px;padding:2px 8px;background:var(--bg4);border-radius:20px;margin-left:auto;">${['初級','中級','高級'][w.level]}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${w.sooni}</div>`;
+    d.onclick=()=>{playTTS(w.kr);toast(`🔊 ${w.kr} = ${w.zh}`);};
+    container.appendChild(d);
+  });
+}
+
+// =====================================================================
+// MODE
+// =====================================================================
+function setMode(m){
+  S.mode=m;
+  document.getElementById('mode-learn').className='mode-tag'+(m==='learn'?' active':'');
+  document.getElementById('mode-speak').className='mode-tag'+(m==='speak'?' active':'');
+  document.getElementById('speak-section').style.display=m==='speak'?'block':'none';
+  document.getElementById('speak-result').style.display='none';
+}
+
+// =====================================================================
+// TTS / AUDIO
+// =====================================================================
+function playTTS(text){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR'; u.rate=0.85;
+    window.speechSynthesis.speak(u);
+  }
+}
+function playAudio(){playTTS(curWord().kr);toast('🔊 播放單字發音');}
+function playExampleAudio(){playTTS(curWord().ex_kr);toast('🔊 播放例句');}
+function playSituation(){
+  const sit=curWord().situation;
+  if(sit&&sit.length>2){playTTS(sit.replace(/[「」：。！]/g,' '));toast('🔊 播放情境');}
+  else toast('此單字暫無情境語音');
+}
+
+// =====================================================================
+// SPEECH RECOGNITION HELPER
+// =====================================================================
+function doSpeechRec(targetText, onScore){
+  if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    const rec=new SR(); rec.lang='ko-KR'; rec.continuous=false; rec.interimResults=false;
+    rec.onresult=(e)=>{
+      const conf=e.results[0][0].confidence;
+      const transcript=e.results[0][0].transcript;
+      onScore(Math.round(conf*100), transcript);
+    };
+    rec.onerror=()=>onScore(Math.floor(Math.random()*30)+60,'');
+    rec.onend=()=>{};
+    rec.start();
+    return rec;
+  } else {
+    setTimeout(()=>onScore(Math.floor(Math.random()*30)+65,''),1200);
+    return null;
+  }
+}
+
+function showScoreResult(elemId, scoreNumId, scoreMsgId, score){
+  const el=document.getElementById(elemId);
+  const sn=document.getElementById(scoreNumId);
+  const sm=document.getElementById(scoreMsgId);
+  el.style.display='block';
+  sn.textContent=score+'分';
+  sn.className='score-num '+(score>=80?'score-good':score>=60?'score-ok':'score-bad');
+  sm.textContent=score>=80?'非常棒！發音很準確！':score>=60?'不錯！再練習幾次會更好！':'需要多練習，仔細聽標準發音';
+  S.xp+=Math.floor(score/10); save();
+  document.getElementById('xp-count').textContent=S.xp;
+}
+
+// Word speaking
+let wordRec=null;
+function startRecording(){
+  const btn=document.getElementById('rec-btn');
+  document.getElementById('speak-result').style.display='none';
+  playTTS(curWord().kr);
+  btn.innerHTML='<span class="rec-dot"></span>錄音中…';
+  btn.disabled=true;
+  setTimeout(()=>{
+    doSpeechRec(curWord().kr,(score)=>{
+      btn.innerHTML='🎤 開始錄音'; btn.disabled=false;
+      showScoreResult('speak-result','score-num','score-msg',score);
+    });
+  },1200);
+}
+
+// Example sentence speaking
+let exRec=null;
+function startExampleRec(){
+  const btn=document.getElementById('ex-rec-btn');
+  document.getElementById('ex-speak-result').style.display='none';
+  playTTS(curWord().ex_kr);
+  btn.classList.add('recording');
+  btn.innerHTML='<span class="rec-dot"></span>跟讀中…';
+  btn.disabled=true;
+  setTimeout(()=>{
+    doSpeechRec(curWord().ex_kr,(score)=>{
+      btn.classList.remove('recording');
+      btn.innerHTML='🎤 跟讀練習'; btn.disabled=false;
+      showScoreResult('ex-speak-result','ex-score-num','ex-score-msg',score);
+    });
+  },1500);
+}
+
+// Situation speaking
+function startSituationRec(){
+  const btn=document.getElementById('sit-rec-btn');
+  const sit=curWord().situation;
+  if(!sit||sit.length<2){toast('此單字暫無情境語音');return;}
+  document.getElementById('sit-speak-result').style.display='none';
+  const firstKr=sit.match(/[가-힣]+[요。！]?/g)?.[0]||curWord().kr;
+  playTTS(firstKr);
+  btn.classList.add('recording');
+  btn.innerHTML='<span class="rec-dot"></span>跟讀中…';
+  btn.disabled=true;
+  setTimeout(()=>{
+    doSpeechRec(firstKr,(score)=>{
+      btn.classList.remove('recording');
+      btn.innerHTML='🎤 跟讀情境'; btn.disabled=false;
+      showScoreResult('sit-speak-result','sit-score-num','sit-score-msg',score);
+    });
+  },1500);
+}
+
+// =====================================================================
+// QUIZ — with save on wrong answer
+// =====================================================================
+let qWords=[], qIdx=0, qScore=0, qIsReview=false;
+
+function initQuiz(reviewMode=false){
+  qIsReview=reviewMode;
+  const base=reviewMode
+    ? WORDS.filter(w=>S.learnedWords.includes(w.kr))
+    : todayWords().concat(wordsForLevel(S.level).slice(0,5));
+  if(base.length<4){toast('單字數不足，請先多學習幾個單字！');return;}
+  qWords=shuffle(base).slice(0,10);
+  qIdx=0; qScore=0;
+  document.getElementById('quiz-score').textContent='0';
+  document.getElementById('quiz-total').textContent='0';
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-next-wrap').style.display='none';
+  document.getElementById('quiz-feedback').style.display='none';
+  renderQuiz();
+}
+function startQuiz(){initQuiz(qIsReview);}
+
+function renderQuiz(){
+  if(qIdx>=qWords.length){
+    document.getElementById('quiz-q').textContent='';
+    document.getElementById('quiz-opts').innerHTML='';
+    document.getElementById('quiz-feedback').style.display='none';
+    document.getElementById('quiz-next-wrap').style.display='none';
+    document.getElementById('quiz-result').style.display='block';
+    document.getElementById('final-score').textContent=`${qScore}/${qWords.length} 分`;
+    S.xp+=qScore*10; save();
+    document.getElementById('xp-count').textContent=S.xp;
+    S.quizHistory.push(qScore/qWords.length); save();
+    return;
+  }
+  const w=qWords[qIdx];
+  const pool=WORDS.filter(x=>x.kr!==w.kr&&x.level===w.level);
+  const wrong=shuffle(pool.length>=3?pool:WORDS.filter(x=>x.kr!==w.kr)).slice(0,3);
+  const opts=shuffle([w,...wrong]);
+  document.getElementById('quiz-num').textContent=qIdx+1;
+  document.getElementById('quiz-q').textContent=`「${w.kr}」的中文意思是？`;
+  const container=document.getElementById('quiz-opts');
+  container.innerHTML='';
+  opts.forEach(opt=>{
+    const d=document.createElement('div');
+    d.className='quiz-opt';
+    d.textContent=opt.zh;
+    d.onclick=()=>handleQuizAnswer(d,opt,w,opts,container);
+    container.appendChild(d);
+  });
+}
+
+function handleQuizAnswer(clickedEl, opt, correctWord, opts, container){
+  if(clickedEl.classList.contains('correct')||clickedEl.classList.contains('wrong'))return;
+  const isCorrect=opt.kr===correctWord.kr;
+  const fb=document.getElementById('quiz-feedback');
+
+  if(isCorrect){
+    clickedEl.classList.add('correct');
+    qScore++;
+    document.getElementById('quiz-score').textContent=qScore;
+    fb.className='quiz-feedback correct-fb';
+    fb.innerHTML=`✅ 正確！<span style="color:var(--green);font-weight:600;">${correctWord.kr}</span> = ${correctWord.zh}`;
+    fb.style.display='block';
+  } else {
+    clickedEl.classList.add('wrong');
+    container.querySelectorAll('.quiz-opt').forEach(d=>{if(d.textContent===correctWord.zh)d.classList.add('correct');});
+    document.getElementById('quiz-total').textContent=qIdx+1;
+
+    // ─── SAVE ON WRONG ───────────────────────────────────────────
+    const alreadySaved=S.savedWords.includes(correctWord.kr);
+    fb.className='quiz-feedback wrong-fb';
+    fb.innerHTML=`❌ 答錯了！正確答案：<span style="color:var(--red);font-weight:600;">${correctWord.kr}</span> = ${correctWord.zh}
+      <div class="quiz-save-row">
+        <span style="font-size:12px;color:var(--text3);">${correctWord.rom}</span>
+        <button class="btn btn-yellow" id="quiz-save-btn" style="padding:5px 12px;font-size:12px;" onclick="quizSaveWord('${correctWord.kr}')">
+          ${alreadySaved?'★ 已儲存':'☆ 儲存單字'}
+        </button>
+      </div>`;
+    fb.style.display='block';
+  }
+  document.getElementById('quiz-total').textContent=qIdx+1;
+  document.getElementById('quiz-next-wrap').style.display='block';
+  playTTS(correctWord.kr);
+}
+
+function quizSaveWord(kr){
+  const btn=document.getElementById('quiz-save-btn');
+  if(!S.savedWords.includes(kr)){
+    S.savedWords.push(kr); save();
+    btn.textContent='★ 已儲存'; btn.style.color='var(--yellow)';
+    toast('⭐ 已儲存到單字本！');
+  }
+}
+
+function nextQuiz(){
+  qIdx++;
+  document.getElementById('quiz-feedback').style.display='none';
+  document.getElementById('quiz-next-wrap').style.display='none';
+  renderQuiz();
+}
+
+// =====================================================================
+// CONVERSATION
+// =====================================================================
+let showZh=true;
+function renderConv(){
+  const c=CONVS[S.convScene];
+  document.getElementById('conv-scene').textContent=c.scene;
+  const chips=document.getElementById('conv-chips');
+  chips.innerHTML='';
+  c.chips.forEach(ch=>{
+    const d=document.createElement('div');
+    d.className='conv-chip'; d.textContent=ch;
+    d.onclick=()=>{document.getElementById('chat-input').value=ch;sendChat();};
+    chips.appendChild(d);
+  });
+  const box=document.getElementById('chat-box');
+  box.innerHTML='';
+  addMsg('ai',c.opening.kr,c.opening.zh);
+}
+function addMsg(role,kr,zh){
+  const box=document.getElementById('chat-box');
+  const d=document.createElement('div');
+  d.className='chat-msg '+role;
+  d.innerHTML=`<div class="msg-kr">${kr}</div>${(zh&&showZh)?`<div class="msg-zh">${zh}</div>`:''}`;
+  box.appendChild(d);
+  box.scrollTop=box.scrollHeight;
+}
+function sendChat(){
+  const inp=document.getElementById('chat-input');
+  const text=inp.value.trim(); if(!text)return;
+  inp.value='';
+  addMsg('user',text,'');
+  playTTS(text);
+  setTimeout(()=>{
+    let resp=CONV_RESP['default'];
+    for(const k in CONV_RESP){if(text.includes(k)){resp=CONV_RESP[k];break;}}
+    addMsg('ai',resp.kr,resp.zh);
+    playTTS(resp.kr);
+  },600);
+}
+function cycleScene(){S.convScene=(S.convScene+1)%CONVS.length;save();renderConv();}
+function translateToggle(){showZh=!showZh;toast(showZh?'顯示中文翻譯':'隱藏中文翻譯');}
+function playConvAudio(){
+  const msgs=document.querySelectorAll('.chat-msg.ai .msg-kr');
+  if(msgs.length)playTTS(msgs[msgs.length-1].textContent);
+}
+function getConvHint(){
+  const c=CONVS[S.convScene];
+  toast('💡 試試：'+c.chips[Math.floor(Math.random()*c.chips.length)]);
+}
+
+// =====================================================================
+// SEARCH + WORD COUNT
+// =====================================================================
+function renderWordCount(){
+  const beg=WORDS.filter(w=>w.level===0).length;
+  const mid=WORDS.filter(w=>w.level===1).length;
+  const adv=WORDS.filter(w=>w.level===2).length;
+  document.getElementById('wc-total').textContent=WORDS.length;
+  document.getElementById('wc-beg').textContent=beg;
+  document.getElementById('wc-mid').textContent=mid;
+  document.getElementById('wc-adv').textContent=adv;
+  document.getElementById('wc-hint').textContent=WORDS.length;
+  document.getElementById('wc-banner').style.display='flex';
+}
+
+function searchWords(q){
+  const container=document.getElementById('search-results');
+  const hint=document.getElementById('search-hint');
+  const banner=document.getElementById('wc-banner');
+  if(!q||q.length<1){container.innerHTML='';hint.style.display='block';banner.style.display='flex';return;}
+  hint.style.display='none'; banner.style.display='none';
+  const ql=q.toLowerCase();
+  const results=WORDS.filter(w=>w.kr.includes(q)||w.zh.includes(q)||w.rom.toLowerCase().includes(ql)||w.sooni.includes(q)).slice(0,20);
+  container.innerHTML='';
+  if(!results.length){container.innerHTML='<div class="hint-text" style="padding:30px 0;">找不到相關單字</div>';return;}
+  results.forEach(w=>{
+    const d=document.createElement('div');
+    d.className='sr-item';
+    d.innerHTML=`<div class="sr-kr">${w.kr}</div>
+      <div class="sr-row">
+        <span style="color:var(--accent2)">${w.rom}</span>
+        <span>・</span><span>${w.zh}</span>
+        <span style="font-size:11px;padding:2px 8px;background:var(--bg4);border-radius:20px;margin-left:auto;">${['初級','中級','高級'][w.level]}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${w.sooni}</div>`;
+    d.onclick=()=>{playTTS(w.kr);toast(`🔊 ${w.kr} = ${w.zh}`);};
+    container.appendChild(d);
+  });
+}
+
+// =====================================================================
+// VOCAB BOOK
+// =====================================================================
+function renderSaved(filter=''){
+  const list=document.getElementById('saved-list');
+  const ns=document.getElementById('no-saved');
+  document.getElementById('saved-count').textContent=S.savedWords.length;
+  const items=S.savedWords.filter(kr=>!filter||kr.includes(filter)||
+    (WORDS.find(x=>x.kr===kr)?.zh||'').includes(filter)||
+    (WORDS.find(x=>x.kr===kr)?.rom||'').toLowerCase().includes(filter.toLowerCase())
+  );
+  list.innerHTML='';
+  if(!items.length){ns.style.display='block';return;}
+  ns.style.display='none';
+  items.forEach(kr=>{
+    const w=WORDS.find(x=>x.kr===kr); if(!w)return;
+    const d=document.createElement('div');
+    d.className='saved-item';
+    d.innerHTML=`<div><div class="si-kr">${w.kr}</div><div class="si-info">${w.rom} ・ ${w.zh} ・ ${w.sooni}</div></div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--accent2);" onclick="event.stopPropagation();playTTS('${w.kr.replace(/'/g,"\\'")}')">🔊</button>
+        <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--yellow);" onclick="event.stopPropagation();removeSaved('${w.kr}')">★</button>
+      </div>`;
+    d.onclick=()=>toast(`${w.kr} = ${w.zh} (${w.rom})`);
+    list.appendChild(d);
+  });
+}
+function removeSaved(kr){
+  S.savedWords=S.savedWords.filter(x=>x!==kr);
+  save(); renderSaved(document.getElementById('vocab-search').value||'');
+  toast('已移除儲存');
+}
+
+// =====================================================================
+// PROGRESS
+// =====================================================================
+function renderProgress(){
+  document.getElementById('stat-learned').textContent=S.learnedWords.length;
+  document.getElementById('stat-saved').textContent=S.savedWords.length;
+  document.getElementById('stat-streak').textContent=S.streak;
+  document.getElementById('streak-count').textContent=S.streak;
+  document.getElementById('xp-count').textContent=S.xp;
+  const total=todayWords().length;
+  const pct=Math.round((S.wordIndex+1)/total*100);
+  document.getElementById('today-pct').textContent=pct+'%';
+  document.getElementById('today-fill').style.width=pct+'%';
+  const acc=S.quizHistory.length?Math.round(S.quizHistory.reduce((a,b)=>a+b,0)/S.quizHistory.length*100)+'%':'0%';
+  document.getElementById('stat-accuracy').textContent=acc;
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  const today=new Date();
+  const dim=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  for(let d=1;d<=dim;d++){
+    const div=document.createElement('div');
+    div.className='cal-day'+(d===today.getDate()?' today':S.studiedDays.includes(d)?' done':'');
+    div.textContent=d; grid.appendChild(div);
+  }
+}
+
+// =====================================================================
+// LEVEL
+// =====================================================================
+function setLevel(lvl){
+  if(!S.unlockedLevels.includes(lvl)){toast('🔒 請先完成前一個等級！或在進度頁手動解鎖');return;}
+  S.level=lvl; S.wordIndex=0; save(); updateLevelUI(); renderWord();
+}
+function unlockLevel(lvl){
+  if(!S.unlockedLevels.includes(lvl)){S.unlockedLevels.push(lvl);save();}
+  updateLevelUI(); toast('🔓 已解鎖'+['','中級','高級'][lvl]+'！');
+}
+function updateLevelUI(){
+  document.querySelectorAll('.level-tab').forEach((t,i)=>{
+    t.className='level-tab'+(i===S.level?' active':'')+(S.unlockedLevels.includes(i)?'':' locked');
+  });
+  document.getElementById('badge-day').textContent=S.dayIndex+1;
+  document.getElementById('day-num').textContent=S.dayIndex+1;
+  document.getElementById('prog-fill').style.width=Math.round((S.dayIndex+1)/25*100)+'%';
+}
+
+// =====================================================================
+// RESET
+// =====================================================================
+let resetType='soft';
+function showReset(t){
+  resetType=t;
+  document.getElementById('reset-desc').textContent=t==='full'
+    ?'確定要完全重置？所有學習紀錄、單字本、XP 都將清除！此操作無法復原。'
+    :'確定要重置學習紀錄？XP 和答題記錄將清除，但單字本保留。';
+  document.getElementById('reset-modal').classList.add('show');
+}
+function closeModal(){document.getElementById('reset-modal').classList.remove('show');}
+function doReset(){
+  if(resetType==='full'){localStorage.removeItem('dk2State');}
+  else{S.xp=0;S.streak=1;S.learnedWords=[];S.quizHistory=[];S.studiedDays=[new Date().getDate()];S.dayIndex=0;S.wordIndex=0;save();}
+  closeModal(); location.reload();
+}
+
+// =====================================================================
+// SCREENS & UTILS
+// =====================================================================
+function showScreen(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='vocab')renderSaved();
+  if(name==='conv')renderConv();
+}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+function init(){
+  updateLevelUI(); renderWord(); setMode(S.mode||'learn');
+  renderWordCount();
+  document.getElementById('xp-count').textContent=S.xp;
+  document.getElementById('streak-count').textContent=S.streak;
+}
+init();
+</script>
+</body>
+</html>
