@@ -2541,7 +2541,6 @@ let wordRec=null;
 function startRecording(){
   const btn=document.getElementById('rec-btn');
   document.getElementById('speak-result').style.display='none';
-  playTTS(curWord().kr);
   btn.innerHTML='<span class="rec-dot"></span>錄音中…';
   btn.disabled=true;
   const safeTimer=setTimeout(()=>{btn.innerHTML='🎤 開始錄音';btn.disabled=false;},8000);
@@ -2560,7 +2559,6 @@ let exRec=null;
 function startExampleRec(){
   const btn=document.getElementById('ex-rec-btn');
   document.getElementById('ex-speak-result').style.display='none';
-  playTTS(curWord().ex_kr);
   btn.classList.add('recording');
   btn.innerHTML='<span class="rec-dot"></span>跟讀中…';
   btn.disabled=true;
@@ -2582,7 +2580,6 @@ function startSituationRec(){
   if(!sit||sit.length<2){toast('此單字暫無情境語音');return;}
   document.getElementById('sit-speak-result').style.display='none';
   const firstKr=sit.match(/[가-힣]+[요。！]?/g)?.[0]||curWord().kr;
-  playTTS(firstKr);
   btn.classList.add('recording');
   btn.innerHTML='<span class="rec-dot"></span>跟讀中…';
   btn.disabled=true;
