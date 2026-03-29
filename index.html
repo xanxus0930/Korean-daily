@@ -242,7 +242,7 @@
   </div>
 
   <div class="prog-wrap">
-    <span>初級進度 <span id="day-num">1</span>/25 天 → 完成初級解鎖中級</span>
+    <span>進度 第 <span id="day-num">1/110</span> 天</span>
     <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:4%"></div></div>
   </div>
 
@@ -264,6 +264,7 @@
         <div class="word-counter" id="word-counter">1/15</div>
         <div class="mode-tags">
           <span class="mode-tag active" id="mode-learn" onclick="setMode('learn')">學習</span>
+          <span class="mode-tag" id="mode-flip" onclick="setMode('flip')">翻牌</span>
           <span class="mode-tag" id="mode-speak" onclick="setMode('speak')">發音</span>
         </div>
         <button class="word-save-btn" id="save-btn" onclick="toggleSave()">☆</button>
@@ -294,6 +295,26 @@
       <div class="nav-word-btns">
         <button class="btn" onclick="prevWord()">← 上一個</button>
         <button class="btn btn-accent" onclick="nextWord()">下一個 →</button>
+      </div>
+
+      <!-- Flashcard mode section -->
+      <div id="flip-section" style="display:none;margin:0 16px 12px;">
+        <div class="speak-box" style="min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;" onclick="flipCard()" id="flip-card">
+          <div id="flip-front" style="text-align:center;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">點擊翻牌查看意思</div>
+            <div style="font-size:32px;font-weight:700;color:var(--text);" id="flip-kr">안녕하세요</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:6px;" id="flip-rom">annyeonghaseyo</div>
+          </div>
+          <div id="flip-back" style="display:none;text-align:center;">
+            <div style="font-size:26px;font-weight:700;color:var(--accent);" id="flip-zh">你好</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:6px;" id="flip-tip-short"></div>
+          </div>
+        </div>
+        <div id="flip-rate-btns" style="display:none;display:flex;gap:10px;margin-top:10px;">
+          <button class="btn" style="flex:1;justify-content:center;background:rgba(248,113,113,0.15);border-color:rgba(248,113,113,0.4);color:var(--red);" onclick="flipRate('hard')">😓 不熟</button>
+          <button class="btn" style="flex:1;justify-content:center;background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.4);color:var(--yellow);" onclick="flipRate('ok')">🤔 普通</button>
+          <button class="btn" style="flex:1;justify-content:center;background:rgba(74,222,128,0.15);border-color:rgba(74,222,128,0.4);color:var(--green);" onclick="flipRate('easy')">😊 熟悉</button>
+        </div>
       </div>
 
       <!-- Speak mode section -->
@@ -352,7 +373,7 @@
     <!-- ===== SCREEN: VOCAB BOOK ===== -->
     <div class="screen" id="screen-vocab">
       <div class="search-bar">
-        <input class="search-input" id="vocab-search" placeholder="搜尋已儲存單字..." oninput="renderSaved(this.value)"/>
+        <input class="search-input" id="vocab-search" placeholder="搜尋已儲存單字..." oninput="savedPage=0;renderSaved(this.value)"/>
       </div>
       <div class="sec-label">已儲存單字 (<span id="saved-count">0</span>)</div>
       <div style="padding:0 16px;" id="saved-list"></div>
@@ -448,7 +469,8 @@
         <div class="stat-card"><div class="stat-num" id="stat-learned">0</div><div class="stat-label">學習單字</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-saved">0</div><div class="stat-label">已儲存</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-accuracy">0%</div><div class="stat-label">測驗正確率</div></div>
-        <div class="stat-card"><div class="stat-num accent-t" id="stat-streak">1</div><div class="stat-label">連續天數</div></div>
+        <div class="stat-card"><div class="stat-num accent-t" id="stat-streak">1</div><div class="stat-label">連續天數 🔥</div></div>
+        <div class="stat-card" style="grid-column:1/-1;"><div class="stat-num" style="font-size:22px;" id="stat-time">0 分鐘</div><div class="stat-label">累積學習時間</div></div>
       </div>
       <div class="prog-wrap" style="padding:4px 16px 8px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
@@ -458,7 +480,11 @@
         <div class="prog-bar"><div class="prog-fill" id="today-fill" style="width:0%"></div></div>
       </div>
       <div style="padding:8px 16px;">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">本月學習日曆</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <button onclick="changeCalMonth(-1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:4px 8px;">‹</button>
+          <div style="font-size:13px;color:var(--text2);" id="cal-month-label">本月學習日曆</div>
+          <button onclick="changeCalMonth(1)" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:4px 8px;">›</button>
+        </div>
         <div class="cal-grid" id="cal-grid"></div>
       </div>
       <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:8px;">
@@ -2839,9 +2865,12 @@ function showAllReview(){
 function setMode(m){
   S.mode=m;
   document.getElementById('mode-learn').className='mode-tag'+(m==='learn'?' active':'');
+  document.getElementById('mode-flip').className='mode-tag'+(m==='flip'?' active':'');
   document.getElementById('mode-speak').className='mode-tag'+(m==='speak'?' active':'');
   document.getElementById('speak-section').style.display=m==='speak'?'block':'none';
   document.getElementById('speak-result').style.display='none';
+  document.getElementById('flip-section').style.display=m==='flip'?'block':'none';
+  if(m==='flip') initFlipCard();
 }
 
 // =====================================================================
@@ -2870,6 +2899,31 @@ function closeSooniModal(e){
   if(e && e.target !== document.getElementById('sooni-modal')) return;
   document.getElementById('sooni-modal').classList.remove('show');
 }
+// ESC 關閉空耳 Modal
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') document.getElementById('sooni-modal').classList.remove('show');
+});
+
+// 鍵盤快捷鍵：← → 換單字、Space 播音、1-4 測驗選項
+document.addEventListener('keydown', e=>{
+  const tag=e.target.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA') return; // 輸入框中不觸發
+  const activeScreen=document.querySelector('.screen.active')?.id||'';
+
+  if(activeScreen==='screen-words'){
+    if(e.key==='ArrowRight'){ e.preventDefault(); nextWord(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); prevWord(); }
+    if(e.key===' '){ e.preventDefault(); playAudio(); }
+  }
+  if(activeScreen==='screen-quiz'){
+    const n=parseInt(e.key);
+    if(n>=1&&n<=4){
+      e.preventDefault();
+      const opts=document.querySelectorAll('.quiz-opt:not(:disabled)');
+      if(opts[n-1]) opts[n-1].click();
+    }
+  }
+});
 
 function saveSooni(){
   const w = curWord(); if(!w) return;
@@ -2897,6 +2951,66 @@ function resetSooni(){
   document.getElementById('sooni-modal').classList.remove('show');
   toast('↩ 已還原預設空耳');
 }
+
+// =====================================================================
+// 翻牌模式 (Flashcard)
+// =====================================================================
+let flipShown = false;
+function initFlipCard(){
+  flipShown = false;
+  const w = curWord();
+  document.getElementById('flip-kr').textContent = w.kr;
+  document.getElementById('flip-rom').textContent = w.rom;
+  document.getElementById('flip-zh').textContent = w.zh;
+  document.getElementById('flip-tip-short').textContent = w.tip ? w.tip.slice(0,40)+'…' : '';
+  document.getElementById('flip-front').style.display = 'block';
+  document.getElementById('flip-back').style.display = 'none';
+  document.getElementById('flip-rate-btns').style.display = 'none';
+  document.getElementById('flip-card').style.background = 'var(--bg3)';
+}
+function flipCard(){
+  if(flipShown) return;
+  flipShown = true;
+  document.getElementById('flip-front').style.display = 'none';
+  document.getElementById('flip-back').style.display = 'block';
+  document.getElementById('flip-rate-btns').style.display = 'flex';
+  document.getElementById('flip-card').style.background = 'rgba(255,107,53,0.07)';
+  playTTS(curWord().kr);
+}
+function flipRate(rating){
+  const labels = {hard:'😓 不熟', ok:'🤔 普通', easy:'😊 熟悉'};
+  toast(labels[rating] + '，繼續下一個！');
+  if(rating === 'hard' && !S.savedWords.includes(curWord().kr)){
+    S.savedWords.push(curWord().kr); save();
+  }
+  nextWord();
+  if(S.mode === 'flip') initFlipCard();
+}
+
+// =====================================================================
+// 學習時間統計
+// =====================================================================
+let studyStartTime = Date.now();
+function getStudyMinutes(){
+  return Math.round((Date.now() - studyStartTime) / 60000);
+}
+// 每分鐘累積學習時間
+setInterval(()=>{
+  if(!S.studyMinutes) S.studyMinutes = 0;
+  S.studyMinutes++; save();
+}, 60000);
+
+// iOS TTS 解鎖：在第一次使用者手勢時預熱 speechSynthesis
+let ttsUnlocked = false;
+function unlockTTS(){
+  if(ttsUnlocked || !('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  window.speechSynthesis.speak(u);
+  ttsUnlocked = true;
+}
+document.addEventListener('click', unlockTTS, {once:true});
+document.addEventListener('touchstart', unlockTTS, {once:true});
 
 function playTTS(text){
   if('speechSynthesis' in window){
@@ -3089,7 +3203,7 @@ function startSituationRec(){
 // =====================================================================
 // QUIZ — with save on wrong answer
 // =====================================================================
-let qWords=[], qIdx=0, qScore=0, qIsReview=false;
+let qWords=[], qIdx=0, qScore=0, qIsReview=false, qWrongWords=[];
 
 function initQuiz(reviewMode=false){
   qIsReview=reviewMode;
@@ -3098,7 +3212,7 @@ function initQuiz(reviewMode=false){
     : todayWords().concat(wordsForLevel(S.level).slice(0,5));
   if(base.length<4){toast('單字數不足，請先多學習幾個單字！');return;}
   qWords=shuffle(base).slice(0,10);
-  qIdx=0; qScore=0;
+  qIdx=0; qScore=0; qWrongWords=[];
   document.getElementById('quiz-score').textContent='0';
   document.getElementById('quiz-total').textContent='0';
   document.getElementById('quiz-result').style.display='none';
@@ -3115,7 +3229,25 @@ function renderQuiz(){
     document.getElementById('quiz-feedback').style.display='none';
     document.getElementById('quiz-next-wrap').style.display='none';
     document.getElementById('quiz-result').style.display='block';
-    document.getElementById('final-score').textContent=`${qScore}/${qWords.length} 分`;
+    const pct=Math.round(qScore/qWords.length*100);
+    const grade=pct>=90?'🥇 優秀！':pct>=70?'🥈 不錯！':pct>=50?'🥉 繼續加油！':'💪 多練習！';
+    document.getElementById('final-score').textContent=`${qScore}/${qWords.length}`;
+    // 詳細結果
+    const resultEl=document.getElementById('quiz-result');
+    let detailHTML=`<div style="font-size:13px;color:var(--text2);margin:10px 0;">${grade} 正確率 <span style="color:var(--accent);font-weight:700;">${pct}%</span></div>`;
+    if(qWrongWords.length){
+      detailHTML+=`<div style="font-size:12px;color:var(--text3);margin-bottom:6px;">答錯的單字（已加入單字本）：</div>`;
+      detailHTML+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">`;
+      qWrongWords.forEach(w=>{
+        detailHTML+=`<span style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer;" onclick="playTTS('${w.kr.replace(/'/g,"\\'")}');toast('🔊 ${w.kr}')">${w.kr} <span style="color:var(--text3);">${w.zh}</span></span>`;
+      });
+      detailHTML+=`</div>`;
+    }
+    resultEl.querySelector('.stat-card').innerHTML=`
+      <div class="stat-num green-t" id="final-score">${qScore}/${qWords.length}</div>
+      <div class="stat-label">測驗完成！</div>
+      ${detailHTML}
+      <button class="btn btn-accent" style="margin-top:8px;display:inline-flex;" onclick="startQuiz()">再測一次</button>`;
     S.xp+=qScore*10; save();
     document.getElementById('xp-count').textContent=S.xp;
     S.quizHistory.push(qScore/qWords.length); save();
@@ -3153,20 +3285,21 @@ function handleQuizAnswer(clickedEl, opt, correctWord, opts, container){
   } else {
     clickedEl.classList.add('wrong');
     container.querySelectorAll('.quiz-opt').forEach(d=>{if(d.textContent===correctWord.zh)d.classList.add('correct');});
-    document.getElementById('quiz-total').textContent=qIdx+1;
-
-    // ─── SAVE ON WRONG ───────────────────────────────────────────
-    const alreadySaved=S.savedWords.includes(correctWord.kr);
+    // 追蹤答錯單字
+    if(!qWrongWords.find(w=>w.kr===correctWord.kr)) qWrongWords.push(correctWord);
+    // 自動加入單字本
+    if(!S.savedWords.includes(correctWord.kr)){S.savedWords.push(correctWord.kr);save();}
+    const alreadySaved=true;
     fb.className='quiz-feedback wrong-fb';
     fb.innerHTML=`❌ 答錯了！正確答案：<span style="color:var(--red);font-weight:600;">${correctWord.kr}</span> = ${correctWord.zh}
       <div class="quiz-save-row">
         <span style="font-size:12px;color:var(--text3);">${correctWord.rom}</span>
-        <button class="btn btn-yellow" id="quiz-save-btn" style="padding:5px 12px;font-size:12px;" onclick="quizSaveWord('${correctWord.kr}')">
-          ${alreadySaved?'★ 已儲存':'☆ 儲存單字'}
-        </button>
+        <span style="font-size:12px;color:var(--yellow);">★ 已自動加入單字本</span>
       </div>`;
     fb.style.display='block';
   }
+  // 禁用所有選項（讓鍵盤快捷鍵 :not(:disabled) 生效）
+  container.querySelectorAll('.quiz-opt').forEach(d=>{ d.style.pointerEvents='none'; d.setAttribute('disabled',''); });
   document.getElementById('quiz-total').textContent=qIdx+1;
   document.getElementById('quiz-next-wrap').style.display='block';
   playTTS(correctWord.kr);
@@ -3412,6 +3545,9 @@ function searchWords(q){
 // =====================================================================
 // VOCAB BOOK
 // =====================================================================
+const SAVED_PAGE_SIZE = 30;
+let savedPage = 0;
+
 function renderSaved(filter=''){
   const list=document.getElementById('saved-list');
   const ns=document.getElementById('no-saved');
@@ -3423,11 +3559,18 @@ function renderSaved(filter=''){
   list.innerHTML='';
   if(!items.length){ns.style.display='block';return;}
   ns.style.display='none';
-  items.forEach(kr=>{
+
+  // 分頁
+  const total=items.length;
+  const pageStart=savedPage*SAVED_PAGE_SIZE;
+  const pageItems=items.slice(pageStart, pageStart+SAVED_PAGE_SIZE);
+
+  pageItems.forEach(kr=>{
     const w=WORDS.find(x=>x.kr===kr); if(!w)return;
+    const sooniDisp=(S.sooniOverrides&&S.sooniOverrides[w.kr]!==undefined)?'✏ '+S.sooniOverrides[w.kr]:w.sooni;
     const d=document.createElement('div');
     d.className='saved-item';
-    d.innerHTML=`<div><div class="si-kr">${w.kr}</div><div class="si-info">${w.rom} ・ ${w.zh} ・ ${w.sooni}</div></div>
+    d.innerHTML=`<div><div class="si-kr">${w.kr}</div><div class="si-info">${w.rom} ・ ${w.zh} ・ <span style="color:var(--text3);">${sooniDisp}</span></div></div>
       <div style="display:flex;gap:8px;align-items:center;">
         <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--accent2);" onclick="event.stopPropagation();playTTS('${w.kr.replace(/'/g,"\\'")}')">🔊</button>
         <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--yellow);" onclick="event.stopPropagation();removeSaved('${w.kr}')">★</button>
@@ -3435,10 +3578,22 @@ function renderSaved(filter=''){
     d.onclick=()=>toast(`${w.kr} = ${w.zh} (${w.rom})`);
     list.appendChild(d);
   });
+
+  // 分頁控制列
+  if(total>SAVED_PAGE_SIZE){
+    const totalPages=Math.ceil(total/SAVED_PAGE_SIZE);
+    const ctrl=document.createElement('div');
+    ctrl.style.cssText='display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 0;color:var(--text2);font-size:13px;';
+    ctrl.innerHTML=`
+      <button class="btn" style="padding:6px 14px;font-size:12px;" ${savedPage===0?'disabled':''} onclick="savedPage--;renderSaved(document.getElementById('vocab-search').value||'')">← 上一頁</button>
+      <span>${savedPage+1} / ${totalPages} 頁（共 ${total} 個）</span>
+      <button class="btn" style="padding:6px 14px;font-size:12px;" ${savedPage>=totalPages-1?'disabled':''} onclick="savedPage++;renderSaved(document.getElementById('vocab-search').value||'')">下一頁 →</button>`;
+    list.appendChild(ctrl);
+  }
 }
 function removeSaved(kr){
   S.savedWords=S.savedWords.filter(x=>x!==kr);
-  save(); renderSaved(document.getElementById('vocab-search').value||'');
+  save(); savedPage=0; renderSaved(document.getElementById('vocab-search').value||'');
   toast('已移除儲存');
 }
 
@@ -3457,17 +3612,39 @@ function renderProgress(){
   document.getElementById('today-fill').style.width=pct+'%';
   const acc=S.quizHistory.length?Math.round(S.quizHistory.reduce((a,b)=>a+b,0)/S.quizHistory.length*100)+'%':'0%';
   document.getElementById('stat-accuracy').textContent=acc;
+  // 學習時間
+  const totalMin=(S.studyMinutes||0)+getStudyMinutes();
+  const timeStr=totalMin>=60?Math.floor(totalMin/60)+'時'+(totalMin%60)+'分':totalMin+'分鐘';
+  document.getElementById('stat-time').textContent=timeStr;
+  renderCalendar();
+}
+
+let calOffset=0; // 0=本月, -1=上月, etc.
+function changeCalMonth(delta){
+  calOffset+=delta;
+  // 不允許超過未來
+  if(calOffset>0) calOffset=0;
+  renderCalendar();
+}
+function renderCalendar(){
   const grid=document.getElementById('cal-grid');
   grid.innerHTML='';
-  const today=new Date();
-  const todayStr=today.toISOString().slice(0,10);
-  const ym=todayStr.slice(0,7); // "YYYY-MM"
-  const dim=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  const now=new Date();
+  const target=new Date(now.getFullYear(), now.getMonth()+calOffset, 1);
+  const yr=target.getFullYear();
+  const mo=target.getMonth();
+  const ym=yr+'-'+(mo+1<10?'0':'')+(mo+1);
+  const todayStr=now.toISOString().slice(0,10);
+  const dim=new Date(yr,mo+1,0).getDate();
+  const monthNames=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const label=document.getElementById('cal-month-label');
+  if(label) label.textContent=(calOffset===0?'本月 ':yr+'年')+monthNames[mo]+'學習日曆';
   for(let d=1;d<=dim;d++){
     const ds=ym+'-'+(d<10?'0':'')+d;
     const div=document.createElement('div');
     div.className='cal-day'+(ds===todayStr?' today':(S.studiedDays||[]).includes(ds)?' done':'');
-    div.textContent=d; grid.appendChild(div);
+    div.textContent=d;
+    grid.appendChild(div);
   }
 }
 
@@ -3487,8 +3664,11 @@ function updateLevelUI(){
     t.className='level-tab'+(i===S.level?' active':'')+(S.unlockedLevels.includes(i)?'':' locked');
   });
   document.getElementById('badge-day').textContent=S.dayIndex+1;
-  document.getElementById('day-num').textContent=S.dayIndex+1;
-  document.getElementById('prog-fill').style.width=Math.round((S.dayIndex+1)/25*100)+'%';
+  // Progress bar: 動態計算當前等級的總天數
+  const totalDays=Math.max(1,Math.floor(wordsForLevel(S.level).length/15));
+  const pctDay=Math.min(100,Math.round((S.dayIndex+1)/totalDays*100));
+  document.getElementById('day-num').textContent=S.dayIndex+1+'/'+totalDays;
+  document.getElementById('prog-fill').style.width=pctDay+'%';
 }
 
 // =====================================================================
@@ -3504,12 +3684,13 @@ function showReset(t){
 }
 function closeModal(){document.getElementById('reset-modal').classList.remove('show');}
 function doReset(){
-  if(resetType==='full'){localStorage.removeItem('dk2State');}
-  else{
+  if(resetType==='full'){
+    localStorage.removeItem('dk2State');
+  } else {
     S.xp=0; S.streak=1; S.learnedWords=[]; S.quizHistory=[];
     S.studiedDays=[]; S.dayIndex=0; S.wordIndex=0;
     S.lastOpenDate=new Date().toISOString().slice(0,10);
-    save();
+    save(); // Bug fix: 確保狀態寫入後再 reload
   }
   closeModal(); location.reload();
 }
