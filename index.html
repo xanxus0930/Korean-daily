@@ -251,6 +251,18 @@
     <!-- ===== SCREEN: WORDS ===== -->
     <div class="screen active" id="screen-words">
 
+      <!-- 語速快捷列 -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 4px;border-bottom:1px solid var(--border);">
+        <span style="font-size:11px;color:var(--text3);white-space:nowrap;">🔊 語速</span>
+        <button id="spd-slow2"  class="btn" style="padding:4px 10px;font-size:12px;border-radius:20px;" onclick="setSpeed(0.6,'slow')">🐢</button>
+        <button id="spd-normal2" class="btn btn-accent" style="padding:4px 10px;font-size:12px;border-radius:20px;" onclick="setSpeed(0.85,'normal')">🚶</button>
+        <button id="spd-fast2"  class="btn" style="padding:4px 10px;font-size:12px;border-radius:20px;" onclick="setSpeed(1.1,'fast')">🚀</button>
+        <input type="range" id="spd-slider2" min="0.4" max="1.5" step="0.05" value="0.85"
+          style="flex:1;accent-color:var(--accent);height:3px;"
+          oninput="onSpeedSlider(this.value)">
+        <span id="spd-label2" style="font-size:11px;color:var(--accent);font-weight:700;min-width:34px;text-align:right;">0.85x</span>
+      </div>
+
       <div class="today-hdr">
         <div class="today-badge"><div class="dl">TODAY</div><div id="badge-day">1</div></div>
         <div>
@@ -446,23 +458,6 @@
     </div>
 
     <!-- ===== SCREEN: CONVERSATION ===== -->
-    <div class="screen" id="screen-conv">
-      <div style="padding:10px 16px 4px;font-size:13px;color:var(--text2);">今日練習情境</div>
-      <div style="font-size:22px;font-weight:700;padding:0 16px 10px;" id="conv-scene">在咖啡廳點餐</div>
-      <div class="conv-chips" id="conv-chips"></div>
-      <div class="chat-box" id="chat-box"></div>
-      <div class="chat-input-row">
-        <input class="chat-input" id="chat-input" placeholder="用韓文輸入..." onkeypress="if(event.key==='Enter')sendChat()"/>
-        <button class="send-btn" onclick="sendChat()">➤</button>
-      </div>
-      <div class="chat-toolbar">
-        <button class="btn" onclick="cycleScene()">🔄 換情境</button>
-        <button class="btn" onclick="translateToggle()">🔤 中文提示</button>
-        <button class="btn" onclick="playConvAudio()">🔊 聽發音</button>
-        <button class="btn" onclick="getConvHint()">💡 提示</button>
-      </div>
-    </div>
-
     <!-- ===== SCREEN: PROGRESS ===== -->
     <div class="screen" id="screen-progress">
       <div class="stats-grid">
@@ -490,21 +485,9 @@
       <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:8px;">
         <div style="font-size:14px;font-weight:600;margin-bottom:12px;">⚙ 學習設定</div>
 
-        <!-- 語速設定 -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">🔊 語音速度</div>
-          <div style="display:flex;gap:8px;">
-            <button id="spd-slow" class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="setSpeed(0.6,'slow')">🐢 慢速</button>
-            <button id="spd-normal" class="btn btn-accent" style="flex:1;justify-content:center;font-size:13px;" onclick="setSpeed(0.85,'normal')">🚶 正常</button>
-            <button id="spd-fast" class="btn" style="flex:1;justify-content:center;font-size:13px;" onclick="setSpeed(1.1,'fast')">🚀 快速</button>
-          </div>
-          <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
-            <input type="range" id="spd-slider" min="0.4" max="1.5" step="0.05" value="0.85"
-              style="flex:1;accent-color:var(--accent);"
-              oninput="onSpeedSlider(this.value)">
-            <span id="spd-label" style="font-size:12px;color:var(--accent);font-weight:600;min-width:36px;text-align:right;">0.85x</span>
-          </div>
-          <button class="btn" style="margin-top:8px;font-size:12px;padding:7px 14px;" onclick="testSpeed()">▶ 試聽</button>
+        <!-- 語速設定已移至單字頁上方快捷列 -->
+        <div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding:8px 12px;background:var(--bg3);border-radius:8px;">
+          🔊 語音速度設定在「單字」頁上方，可直接快捷調整
         </div>
 
         <div style="display:flex;gap:8px;margin-bottom:14px;">
@@ -526,7 +509,6 @@
     <button class="nav-btn" onclick="showScreen('vocab',this)"><span class="nav-icon">📚</span>單字本</button>
     <button class="nav-btn" onclick="showScreen('search',this);renderWordCount()"><span class="nav-icon">🔍</span>搜尋</button>
     <button class="nav-btn" onclick="showScreen('quiz',this);initQuiz()"><span class="nav-icon">✏️</span>測驗</button>
-    <button class="nav-btn" onclick="showScreen('conv',this)"><span class="nav-icon">💬</span>對話</button>
     <button class="nav-btn" onclick="showScreen('progress',this);renderProgress()"><span class="nav-icon">📊</span>進度</button>
   </div>
 
@@ -3022,30 +3004,27 @@ function playTTS(text){
 }
 
 // ── 語速設定 ──
-function setSpeed(rate, key){
-  S.ttsRate = rate;
-  save();
-  document.getElementById('spd-slider').value = rate;
-  document.getElementById('spd-label').textContent = rate.toFixed(2)+'x';
+function syncSpeedUI(rate, key){
+  // 只更新單字頁頂部快捷列
+  const el=document.getElementById('spd-slider2');
+  const lb=document.getElementById('spd-label2');
+  if(el) el.value=rate;
+  if(lb) lb.textContent=rate.toFixed(2)+'x';
+  const activeKey=key||(rate<=0.65?'slow':rate>=1.0?'fast':'normal');
   ['slow','normal','fast'].forEach(k=>{
-    const btn = document.getElementById('spd-'+k);
-    btn.className = 'btn' + (k===key?' btn-accent':'');
+    const btn=document.getElementById('spd-'+k+'2');
+    if(btn) btn.className='btn'+(k===activeKey?' btn-accent':'');
   });
+}
+function setSpeed(rate, key){
+  S.ttsRate=rate; save();
+  syncSpeedUI(rate, key);
   toast('語速已設為 '+rate.toFixed(2)+'x');
 }
-
 function onSpeedSlider(val){
-  const rate = parseFloat(val);
-  S.ttsRate = rate;
-  save();
-  document.getElementById('spd-label').textContent = rate.toFixed(2)+'x';
-  // Update active button state
-  ['slow','normal','fast'].forEach(k=>{
-    document.getElementById('spd-'+k).className = 'btn';
-  });
-  if(rate<=0.65) document.getElementById('spd-slow').className='btn btn-accent';
-  else if(rate>=1.0) document.getElementById('spd-fast').className='btn btn-accent';
-  else document.getElementById('spd-normal').className='btn btn-accent';
+  const rate=parseFloat(val);
+  S.ttsRate=rate; save();
+  syncSpeedUI(rate, null);
 }
 
 function testSpeed(){
@@ -3054,15 +3033,7 @@ function testSpeed(){
 }
 
 function initSpeedUI(){
-  const rate = S.ttsRate || 0.85;
-  document.getElementById('spd-slider').value = rate;
-  document.getElementById('spd-label').textContent = rate.toFixed(2)+'x';
-  let activeKey = 'normal';
-  if(rate<=0.65) activeKey='slow';
-  else if(rate>=1.0) activeKey='fast';
-  ['slow','normal','fast'].forEach(k=>{
-    document.getElementById('spd-'+k).className = 'btn'+(k===activeKey?' btn-accent':'');
-  });
+  syncSpeedUI(S.ttsRate||0.85, null);
 }
 function playAudio(){playTTS(curWord().kr);toast('🔊 播放單字發音');}
 function playExampleAudio(){playTTS(curWord().ex_kr);toast('🔊 播放例句');}
@@ -3259,6 +3230,8 @@ function renderQuiz(){
   const opts=shuffle([w,...wrong]);
   document.getElementById('quiz-num').textContent=qIdx+1;
   document.getElementById('quiz-q').textContent=`「${w.kr}」的中文意思是？`;
+  // 自動播放題目單字
+  setTimeout(()=>playTTS(w.kr), 300);
   const container=document.getElementById('quiz-opts');
   container.innerHTML='';
   opts.forEach(opt=>{
@@ -3706,7 +3679,6 @@ function showScreen(name,btn){
   document.getElementById('screen-'+name).classList.add('active');
   if(btn)btn.classList.add('active');
   if(name==='vocab')renderSaved();
-  if(name==='conv')renderConv();
 }
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function toast(msg){
@@ -3721,7 +3693,7 @@ function toast(msg){
 function checkNewDay(){
   const todayStr = new Date().toISOString().slice(0,10);
 
-  // 確保 studiedDays 存在
+  // 確保欄位存在
   if(!S.studiedDays) S.studiedDays = [];
   if(!S.sooniOverrides) S.sooniOverrides = {};
 
@@ -3733,20 +3705,21 @@ function checkNewDay(){
     return;
   }
 
-  // 記錄今天（無論如何）
+  // 記錄今天有開啟
   if(!S.studiedDays.includes(todayStr)) S.studiedDays.push(todayStr);
 
-  if(S.lastOpenDate === todayStr) return; // 今天已開啟過
+  // 今天已開啟過，不重複更新
+  if(S.lastOpenDate === todayStr) return;
 
-  // ── 新的一天 ──
+  // ── 新的一天（有開啟才計算）──
   const diffDays = Math.round((new Date(todayStr) - new Date(S.lastOpenDate)) / 86400000);
 
-  // 推進 dayIndex（每天換一批新單字）
+  // 每次開啟只推進 1 天的單字，不管中間隔了幾天
   const total = Math.max(1, Math.ceil(wordsForLevel(S.level).length / 15));
-  S.dayIndex = (S.dayIndex + diffDays) % total;
+  S.dayIndex = (S.dayIndex + 1) % total;
   S.wordIndex = 0;
 
-  // 連續天數
+  // 連續天數：只有昨天也有開啟才+1，否則中斷歸1
   S.streak = diffDays === 1 ? S.streak + 1 : 1;
 
   // 重置測驗歷史（每天重新計算）
